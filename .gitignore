@@ -1,0 +1,33 @@
+# Gradle output and local state
+.gradle/
+build/
+
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Local runtime/server files
+run/
+server/
+logs/
+plugins/
+cache/
+world/
+world_nether/
+world_the_end/
+*.log
+eula.txt
+server.properties
+banned-ips.json
+banned-players.json
+ops.json
+usercache.json
+whitelist.json
+
+# OS files
+.DS_Store
+Thumbs.db

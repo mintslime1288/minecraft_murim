@@ -1,0 +1,3 @@
+# Realm progression and balance values belong here, not in Java code.
+# Realms listed in GAME_DESIGN.md are intentionally not implemented yet.
+realms: {}

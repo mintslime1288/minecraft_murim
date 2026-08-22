@@ -1,0 +1,16 @@
+name: MurimRPG
+version: '${version}'
+main: com.murimrpg.MurimRpgPlugin
+api-version: '26.2'
+description: A maintainable foundation for a Paper-based martial arts RPG.
+commands:
+  murim:
+    description: Shows MurimRPG status and player profile test tools.
+    usage: /murim <status|profile|admin>
+permissions:
+  murimrpg.command.status:
+    description: Allows use of /murim status.
+    default: true
+  murim.admin:
+    description: Allows MurimRPG administrator test commands.
+    default: op

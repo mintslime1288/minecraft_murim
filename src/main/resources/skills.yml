@@ -1,0 +1,3 @@
+# Balance values for movement and sect skills belong here, not in Java code.
+# Skills listed in GAME_DESIGN.md are intentionally not implemented yet.
+skills: {}
