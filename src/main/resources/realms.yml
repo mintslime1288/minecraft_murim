@@ -1,3 +1,144 @@
-# Realm progression and balance values belong here, not in Java code.
-# Realms listed in GAME_DESIGN.md are intentionally not implemented yet.
-realms: {}
+# Development balance values. Progression code reads every value from this file.
+realms:
+  - stage-id: third_rate_initiate
+    major-realm-id: THIRD_RATE
+    phase-id: INITIATE
+    display-name: 삼류·입문
+    order: 1
+    required-cultivation-exp: 0
+    max-qi: 100
+    qi-regeneration: 2
+    promotion-requirements: []
+    unlocks: [QI_BAR]
+    next-stage-id: third_rate_beginner
+
+  - stage-id: third_rate_beginner
+    major-realm-id: THIRD_RATE
+    phase-id: BEGINNER
+    display-name: 삼류·하수
+    order: 2
+    required-cultivation-exp: 100
+    max-qi: 110
+    qi-regeneration: 2
+    promotion-requirements: []
+    unlocks: [CRIMSON_COMBO]
+    next-stage-id: third_rate_intermediate
+
+  - stage-id: third_rate_intermediate
+    major-realm-id: THIRD_RATE
+    phase-id: INTERMEDIATE
+    display-name: 삼류·중수
+    order: 3
+    required-cultivation-exp: 250
+    max-qi: 120
+    qi-regeneration: 3
+    promotion-requirements: []
+    unlocks: [CLOUD_STEP]
+    next-stage-id: third_rate_peak
+
+  - stage-id: third_rate_peak
+    major-realm-id: THIRD_RATE
+    phase-id: PEAK
+    display-name: 삼류·평정
+    order: 4
+    required-cultivation-exp: 450
+    max-qi: 130
+    qi-regeneration: 3
+    promotion-requirements: []
+    unlocks: [SECOND_RATE_TRIAL_ACCESS]
+    next-stage-id: second_rate_early
+
+  - stage-id: second_rate_early
+    major-realm-id: SECOND_RATE
+    phase-id: EARLY
+    display-name: 이류·초기
+    order: 5
+    required-cultivation-exp: 700
+    max-qi: 150
+    qi-regeneration: 4
+    promotion-requirements: [training_trial]
+    unlocks: [QI_REGEN_1]
+    next-stage-id: second_rate_middle
+
+  - stage-id: second_rate_middle
+    major-realm-id: SECOND_RATE
+    phase-id: MIDDLE
+    display-name: 이류·중기
+    order: 6
+    required-cultivation-exp: 1000
+    max-qi: 165
+    qi-regeneration: 4
+    promotion-requirements: []
+    unlocks: [FALLING_PETAL_COUNTER]
+    next-stage-id: second_rate_late
+
+  - stage-id: second_rate_late
+    major-realm-id: SECOND_RATE
+    phase-id: LATE
+    display-name: 이류·후기
+    order: 7
+    required-cultivation-exp: 1350
+    max-qi: 180
+    qi-regeneration: 5
+    promotion-requirements: []
+    unlocks: [AERIAL_STEP]
+    next-stage-id: second_rate_complete
+
+  - stage-id: second_rate_complete
+    major-realm-id: SECOND_RATE
+    phase-id: COMPLETE
+    display-name: 이류·원만
+    order: 8
+    required-cultivation-exp: 1750
+    max-qi: 200
+    qi-regeneration: 5
+    promotion-requirements: []
+    unlocks: [BLACK_PINE_CHIEF_ACCESS]
+    next-stage-id: first_rate_early
+
+  - stage-id: first_rate_early
+    major-realm-id: FIRST_RATE
+    phase-id: EARLY
+    display-name: 일류·초기
+    order: 9
+    required-cultivation-exp: 2200
+    max-qi: 230
+    qi-regeneration: 6
+    promotion-requirements: [black_pine_chief]
+    unlocks: [SWORD_AURA_VISUAL]
+    next-stage-id: first_rate_middle
+
+  - stage-id: first_rate_middle
+    major-realm-id: FIRST_RATE
+    phase-id: MIDDLE
+    display-name: 일류·중기
+    order: 10
+    required-cultivation-exp: 2700
+    max-qi: 260
+    qi-regeneration: 7
+    promotion-requirements: []
+    unlocks: [MAX_QI_1]
+    next-stage-id: first_rate_late
+
+  - stage-id: first_rate_late
+    major-realm-id: FIRST_RATE
+    phase-id: LATE
+    display-name: 일류·후기
+    order: 11
+    required-cultivation-exp: 3300
+    max-qi: 300
+    qi-regeneration: 8
+    promotion-requirements: []
+    unlocks: [MOVEMENT_UPGRADE_1]
+    next-stage-id: first_rate_peak
+
+  - stage-id: first_rate_peak
+    major-realm-id: FIRST_RATE
+    phase-id: PEAK
+    display-name: 일류·절정
+    order: 12
+    required-cultivation-exp: 4000
+    max-qi: 350
+    qi-regeneration: 10
+    promotion-requirements: []
+    unlocks: [MVP_COMPLETE_TITLE]

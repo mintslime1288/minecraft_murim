@@ -24,6 +24,7 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("io.papermc.paper:paper-api:$paperApiVersion")
     testImplementation("org.slf4j:slf4j-api:2.0.17")
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.17")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

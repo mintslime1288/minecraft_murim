@@ -6,8 +6,9 @@ import com.murimrpg.repository.PlayerRepository;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -18,6 +19,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public final class PlayerProfileService {
@@ -26,7 +29,9 @@ public final class PlayerProfileService {
     private final Clock clock;
     private final ConcurrentMap<UUID, PlayerProfile> cache = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, ProfileLoadState> loadStates = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Long> sessionTokens = new ConcurrentHashMap<>();
     private final AtomicBoolean acceptingTasks = new AtomicBoolean(true);
+    private final AtomicLong nextSessionToken = new AtomicLong();
 
     public PlayerProfileService(PlayerRepository repository, ExecutorService databaseExecutor, Clock clock) {
         this.repository = repository;
@@ -62,53 +67,74 @@ public final class PlayerProfileService {
         });
     }
 
+    public void beginSession(UUID uuid) {
+        sessionTokens.put(uuid, nextSessionToken.incrementAndGet());
+    }
+
     public CompletableFuture<PlayerProfile> setProgress(UUID uuid, ProgressUpdate progressUpdate) {
-        return submit(() -> {
-            Instant now = clock.instant();
-            PlayerProfile current = currentOrLoad(uuid, now);
+        return mutate(uuid, (current, now) -> {
             PlayerProfile updated = current.withProgress(
                     progressUpdate.majorRealm(),
                     progressUpdate.phase(),
                     progressUpdate.cultivationExp(),
                     now
             );
-            repository.save(updated);
-            cache.put(uuid, updated);
-            loadStates.put(uuid, ProfileLoadState.LOADED);
-            return updated;
+            return ProfileMutation.saved(updated, updated);
         });
     }
 
     public CompletableFuture<PlayerProfile> resetProgress(UUID uuid) {
+        return mutate(uuid, (current, now) -> {
+            PlayerProfile reset = current.resetProgress(now);
+            return ProfileMutation.saved(reset, reset);
+        });
+    }
+
+    public <T> CompletableFuture<T> mutate(
+            UUID uuid,
+            BiFunction<PlayerProfile, Instant, ProfileMutation<T>> operation
+    ) {
         return submit(() -> {
             Instant now = clock.instant();
             PlayerProfile current = currentOrLoad(uuid, now);
-            PlayerProfile reset = current.resetProgress(now);
-            repository.save(reset);
-            cache.put(uuid, reset);
-            loadStates.put(uuid, ProfileLoadState.LOADED);
-            return reset;
+            ProfileMutation<T> mutation = operation.apply(current, now);
+            if (mutation.save()) {
+                repository.save(mutation.profile());
+                cache.put(uuid, mutation.profile());
+                loadStates.put(uuid, ProfileLoadState.LOADED);
+            }
+            return mutation.result();
         });
     }
 
     public CompletableFuture<Void> saveAndUnload(UUID uuid) {
+        long sessionToken = sessionTokens.getOrDefault(uuid, 0L);
         return submit(() -> {
             PlayerProfile current = cache.get(uuid);
             if (current == null) {
-                loadStates.remove(uuid);
+                removeSessionStateIfCurrent(uuid, sessionToken);
                 return (Void) null;
             }
 
             PlayerProfile saved = current.touch(clock.instant());
             repository.save(saved);
-            cache.remove(uuid, current);
-            loadStates.remove(uuid);
+            if (removeSessionStateIfCurrent(uuid, sessionToken)) {
+                cache.remove(uuid, current);
+                loadStates.remove(uuid);
+            } else {
+                cache.replace(uuid, current, saved);
+                loadStates.put(uuid, ProfileLoadState.LOADED);
+            }
             return (Void) null;
         }).whenComplete((result, error) -> {
             if (error != null) {
                 loadStates.put(uuid, ProfileLoadState.ERROR);
             }
         });
+    }
+
+    public CompletableFuture<CachedProfilesSaveResult> saveCachedProfiles() {
+        return submit(this::saveCachedProfilesInternal);
     }
 
     public Optional<PlayerProfile> cachedProfile(UUID uuid) {
@@ -160,23 +186,35 @@ public final class PlayerProfileService {
     }
 
     private void flushAllInternal() {
-        List<RuntimeException> failures = new ArrayList<>();
+        CachedProfilesSaveResult result = saveCachedProfilesInternal();
+        if (!result.failures().isEmpty()) {
+            IllegalStateException combined = new IllegalStateException(
+                    "Failed to flush " + result.failureCount() + " player profile(s) during shutdown"
+            );
+            result.failures().values().forEach(combined::addSuppressed);
+            throw combined;
+        }
+    }
+
+    private CachedProfilesSaveResult saveCachedProfilesInternal() {
+        int successCount = 0;
+        Map<UUID, Throwable> failures = new LinkedHashMap<>();
         for (PlayerProfile current : List.copyOf(cache.values())) {
             try {
                 PlayerProfile saved = current.touch(clock.instant());
                 repository.save(saved);
                 cache.replace(current.uuid(), current, saved);
+                loadStates.put(current.uuid(), ProfileLoadState.LOADED);
+                successCount++;
             } catch (RuntimeException exception) {
-                failures.add(exception);
+                failures.put(current.uuid(), exception);
             }
         }
-        if (!failures.isEmpty()) {
-            IllegalStateException combined = new IllegalStateException(
-                    "Failed to flush " + failures.size() + " player profile(s) during shutdown"
-            );
-            failures.forEach(combined::addSuppressed);
-            throw combined;
-        }
+        return new CachedProfilesSaveResult(successCount, failures);
+    }
+
+    private boolean removeSessionStateIfCurrent(UUID uuid, long sessionToken) {
+        return sessionToken == 0L || sessionTokens.remove(uuid, sessionToken);
     }
 
     private <T> CompletableFuture<T> submit(Supplier<T> task) {

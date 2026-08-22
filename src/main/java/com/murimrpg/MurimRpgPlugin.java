@@ -1,14 +1,21 @@
 package com.murimrpg;
 
 import com.murimrpg.command.MurimCommand;
+import com.murimrpg.domain.CultivationProgression;
+import com.murimrpg.infrastructure.config.CultivationConfigLoader;
 import com.murimrpg.infrastructure.paper.BukkitMainThreadExecutor;
+import com.murimrpg.infrastructure.paper.PromotionFeedback;
+import com.murimrpg.infrastructure.paper.PromotionFeedbackSettings;
 import com.murimrpg.infrastructure.sqlite.SqlitePlayerRepository;
 import com.murimrpg.listener.PlayerProfileListener;
 import com.murimrpg.presentation.StatusMessageFactory;
 import com.murimrpg.service.PlayerProfileService;
+import com.murimrpg.service.ProgressionService;
 import com.murimrpg.service.StatusService;
 import java.time.Clock;
 import java.time.Duration;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -30,10 +37,34 @@ public final class MurimRpgPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        saveResource("skills.yml", false);
-        saveResource("realms.yml", false);
+        saveResourceIfMissing("skills.yml");
+        saveResourceIfMissing("realms.yml");
 
         Logger logger = getLogger();
+        CultivationProgression progression;
+        try {
+            progression = new CultivationConfigLoader().load(
+                    getDataFolder().toPath().resolve("realms.yml")
+            );
+        } catch (IllegalArgumentException exception) {
+            logger.log(Level.SEVERE, "Invalid realms.yml; MurimRPG cannot start safely.", exception);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+        PromotionFeedbackSettings feedbackSettings;
+        try {
+            feedbackSettings = new PromotionFeedbackSettings(
+                    getConfig().getBoolean("promotion-feedback.title-enabled", true),
+                    getConfig().getBoolean("promotion-feedback.sound-enabled", true),
+                    getConfig().getBoolean("promotion-feedback.particles-enabled", true),
+                    getConfig().getBoolean("promotion-feedback.chat-enabled", true),
+                    getConfig().getInt("promotion-feedback.particle-count", 18)
+            );
+        } catch (IllegalArgumentException exception) {
+            logger.log(Level.SEVERE, "Invalid promotion-feedback configuration; MurimRPG cannot start safely.", exception);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         StatusService statusService = new StatusService(
                 getPluginMeta().getName(),
                 getPluginMeta().getVersion(),
@@ -51,6 +82,7 @@ public final class MurimRpgPlugin extends JavaPlugin {
                 logger
         );
         profileService = new PlayerProfileService(repository, databaseExecutor, Clock.systemUTC());
+        ProgressionService progressionService = new ProgressionService(profileService, progression);
         profileService.initialize().whenComplete((result, error) -> {
             if (error == null) {
                 statusService.setDataStoreStatus("configured (SQLite)");
@@ -62,11 +94,14 @@ public final class MurimRpgPlugin extends JavaPlugin {
         });
 
         StatusMessageFactory messageFactory = new StatusMessageFactory();
+        PromotionFeedback promotionFeedback = new PromotionFeedback(feedbackSettings);
         Executor mainThreadExecutor = new BukkitMainThreadExecutor(this);
         MurimCommand murimCommand = new MurimCommand(
                 statusService,
                 profileService,
+                progressionService,
                 messageFactory,
+                promotionFeedback,
                 mainThreadExecutor,
                 logger
         );
@@ -77,12 +112,19 @@ public final class MurimRpgPlugin extends JavaPlugin {
         command.setExecutor(murimCommand);
         command.setTabCompleter(murimCommand);
         Bukkit.getPluginManager().registerEvents(
-                new PlayerProfileListener(profileService, mainThreadExecutor, messageFactory, logger),
+                new PlayerProfileListener(
+                        profileService,
+                        progressionService,
+                        mainThreadExecutor,
+                        messageFactory,
+                        logger
+                ),
                 this
         );
 
         getLogger().info("MurimRPG enabled (version " + getPluginMeta().getVersion()
-                + ", Paper API " + PAPER_API_VERSION + ").");
+                + ", Paper API " + PAPER_API_VERSION + ", cultivation stages "
+                + progression.stages().size() + ").");
     }
 
     @Override
@@ -113,5 +155,12 @@ public final class MurimRpgPlugin extends JavaPlugin {
             current = current.getCause();
         }
         return current;
+    }
+
+    private void saveResourceIfMissing(String resourceName) {
+        Path destination = getDataFolder().toPath().resolve(resourceName);
+        if (Files.notExists(destination)) {
+            saveResource(resourceName, false);
+        }
     }
 }

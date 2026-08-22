@@ -35,7 +35,7 @@ class SqlitePlayerRepositoryTest {
                 MajorRealm.SECOND_RATE,
                 RealmPhase.LATE,
                 1234,
-                Set.of("TRIAL_ONE", "TRIAL_TWO"),
+                Set.of("training_trial", "black_pine_chief"),
                 Set.of("QI_BAR", "BLACK_PINE_ENTRY"),
                 CREATED_AT,
                 CREATED_AT.plusSeconds(60)
@@ -45,7 +45,7 @@ class SqlitePlayerRepositoryTest {
         PlayerProfile loaded = repository.findByUuid(UUID_VALUE).orElseThrow();
 
         assertEquals(changed, loaded);
-        assertEquals(Set.of("TRIAL_ONE", "TRIAL_TWO"), loaded.completedRequirements());
+        assertEquals(Set.of("training_trial", "black_pine_chief"), loaded.completedRequirements());
         assertEquals(Set.of("QI_BAR", "BLACK_PINE_ENTRY"), loaded.unlockedContent());
     }
 

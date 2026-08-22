@@ -17,7 +17,7 @@ public record PlayerProfile(
         Instant updatedAt
 ) {
     public static final String DEFAULT_UNLOCKED_CONTENT = "QI_BAR";
-    private static final Pattern STABLE_ID = Pattern.compile("[A-Z][A-Z0-9_.:-]*");
+    private static final Pattern STABLE_ID = Pattern.compile("[A-Za-z][A-Za-z0-9_.:-]*");
 
     public PlayerProfile {
         Objects.requireNonNull(uuid, "uuid");
@@ -65,6 +65,26 @@ public record PlayerProfile(
                 newExp,
                 completedRequirements,
                 unlockedContent,
+                createdAt,
+                now
+        );
+    }
+
+    public PlayerProfile withCultivationState(
+            MajorRealm newMajorRealm,
+            RealmPhase newPhase,
+            long newExp,
+            Set<String> newCompletedRequirements,
+            Set<String> newUnlockedContent,
+            Instant now
+    ) {
+        return new PlayerProfile(
+                uuid,
+                newMajorRealm,
+                newPhase,
+                newExp,
+                newCompletedRequirements,
+                newUnlockedContent,
                 createdAt,
                 now
         );

@@ -1,3 +1,11 @@
 # MurimRPG general settings.
-# Feature configuration will be added as each system enters the implementation scope.
 locale: ko_KR
+
+# 경지 승급 성공 시 해당 플레이어에게만 보여 주는 연출이다.
+# 파티클 수는 안전을 위해 플러그인에서 0~50 범위로 검증한다.
+promotion-feedback:
+  title-enabled: true
+  sound-enabled: true
+  particles-enabled: true
+  chat-enabled: true
+  particle-count: 18

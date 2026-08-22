@@ -14,7 +14,8 @@ Paper/Bukkit은 외부 프레임워크 경계로 취급한다. 명령과 Listene
 - `com.murimrpg.repository`: 모든 플레이어 데이터 접근을 정의하는 `PlayerRepository` 계약
 - `com.murimrpg.listener`: 접속·종료 이벤트에서 UUID를 서비스 입력으로 변환
 - `com.murimrpg.infrastructure.sqlite`: PreparedStatement 기반 SQLite 저장소와 스키마 마이그레이션
-- `com.murimrpg.infrastructure.paper`: 비동기 완료 결과를 Paper 메인 스레드로 전달하는 실행기
+- `com.murimrpg.infrastructure.paper`: 비동기 완료 결과를 Paper 메인 스레드로 전달하는 실행기와 개인 승급 연출 어댑터
+- `com.murimrpg.infrastructure.config`: `realms.yml`을 읽어 설정 정의로 변환하고 구조 오류를 보고
 
 ## 의존 방향
 
@@ -37,7 +38,12 @@ Paper entry point -> command/listener -> service -> domain
 - DB 작업 안에서는 UUID와 순수 Java 도메인 객체만 사용한다.
 - 비동기 완료 후 플레이어 메시지가 필요하면 `BukkitMainThreadExecutor`로 메인 스레드에 복귀한다.
 - 변경된 프로필은 DB 저장이 성공한 뒤에만 캐시에 반영한다. 저장 실패 시 이전 캐시를 유지한다.
+- `ProgressionService`는 `PlayerProfileService.mutate`를 통해 EXP 검사, 조건 검사, 한 단계 변경, 해금 합치기, DB 저장을 하나의 DB 실행기 작업으로 수행한다.
+- 같은 UUID의 동시 승급 요청은 플레이어별 in-flight 집합으로 거부하며, 같은 서버 tick 토큰의 두 번째 요청도 첫 저장 완료 여부와 관계없이 거부한다. 로그아웃 시 토큰을 제거한다.
 - 종료 시 새 작업을 차단하고, 이미 대기 중인 작업 뒤에 전체 캐시 flush를 넣어 완료를 기다린다.
+- 로그아웃 저장이 성공한 프로필만 캐시에서 제거한다. 실패하면 복구 저장을 위해 캐시를 보존하고 상태를 `ERROR`로 표시한다. 접속 세션 토큰이 바뀐 빠른 재접속에서는 이전 quit 저장을 완료하되 새 세션 캐시는 제거하지 않는다.
+- `/murim admin saveprofiles`는 메인 스레드를 막지 않고 DB 실행기에서 캐시 사본을 저장하며 성공/실패 개수를 반환한다. 성공한 재저장은 상태를 `LOADED`로 복구한다.
+- 승급 Title·효과음·파티클과 액션바는 DB 작업이 끝난 뒤 메인 스레드에서만 Paper 객체에 적용한다.
 
 ## SQLite 스키마
 
@@ -63,4 +69,17 @@ player_profiles
 
 ## 현재 구현 범위
 
-플러그인 생명주기, `/murim status`, 프로필 자동 생성·저장, `/murim profile`, 관리자 테스트용 진행도 설정·초기화만 포함한다. 실제 승급 판정과 콘텐츠 시스템은 포함하지 않는다.
+플러그인 생명주기, 프로필 자동 생성·저장, 12단계 경지 조회·승급, 개인 승급 피드백, 관리자 테스트용 EXP·조건·진행도·저장 진단을 포함한다. 실제 퀘스트, 보스, 무공, 경공, 지속 내공 HUD, 몬스터, 장비는 포함하지 않는다.
+
+## 경지 설정
+
+`realms.yml`의 각 항목은 stage ID, 대경지/소경지 ID, 표시명, 명시적 order, 누적 EXP, 최대 내공, 회복량, 진입 조건, 해금 ID, 다음 stage ID를 가진다. `CultivationConfigLoader`와 `CultivationProgression`은 시작 시 다음 오류를 검증한다.
+
+- 중복 stage ID
+- 중복 또는 비연속 order
+- 잘못된 대경지·소경지 조합
+- 중복 경지 조합
+- 정렬 순서와 맞지 않는 next-stage 연결
+- 잘못된 숫자·조건·콘텐츠 ID
+
+설정이 잘못되면 부분적인 규칙으로 서버를 운영하지 않고 플러그인을 안전하게 비활성화한다.

@@ -5,8 +5,8 @@ api-version: '26.2'
 description: A maintainable foundation for a Paper-based martial arts RPG.
 commands:
   murim:
-    description: Shows MurimRPG status and player profile test tools.
-    usage: /murim <status|profile|admin>
+    description: Shows MurimRPG status, profile, realm progression, and administrator test tools.
+    usage: /murim <status|profile|realm|cultivate|admin>
 permissions:
   murimrpg.command.status:
     description: Allows use of /murim status.

@@ -2,6 +2,7 @@ package com.murimrpg.listener;
 
 import com.murimrpg.presentation.StatusMessageFactory;
 import com.murimrpg.service.PlayerProfileService;
+import com.murimrpg.service.ProgressionService;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
@@ -15,17 +16,20 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public final class PlayerProfileListener implements Listener {
     private final PlayerProfileService profileService;
+    private final ProgressionService progressionService;
     private final Executor mainThreadExecutor;
     private final StatusMessageFactory messageFactory;
     private final Logger logger;
 
     public PlayerProfileListener(
             PlayerProfileService profileService,
+            ProgressionService progressionService,
             Executor mainThreadExecutor,
             StatusMessageFactory messageFactory,
             Logger logger
     ) {
         this.profileService = profileService;
+        this.progressionService = progressionService;
         this.mainThreadExecutor = mainThreadExecutor;
         this.messageFactory = messageFactory;
         this.logger = logger;
@@ -34,6 +38,7 @@ public final class PlayerProfileListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
+        profileService.beginSession(uuid);
         profileService.loadOrCreate(uuid).whenCompleteAsync((profile, error) -> {
             if (error == null) {
                 return;
@@ -49,6 +54,7 @@ public final class PlayerProfileListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
+        progressionService.forgetPromotionRequest(uuid);
         profileService.saveAndUnload(uuid).whenComplete((result, error) -> {
             if (error != null) {
                 logger.log(Level.SEVERE, "Failed to save player profile on quit for " + uuid, rootCause(error));

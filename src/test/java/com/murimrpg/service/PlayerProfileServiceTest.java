@@ -1,7 +1,9 @@
 package com.murimrpg.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.murimrpg.domain.MajorRealm;
 import com.murimrpg.domain.PlayerProfile;
@@ -17,7 +19,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +47,7 @@ class PlayerProfileServiceTest {
     @AfterEach
     void tearDown() throws Exception {
         repository.failSaves = false;
+        repository.releaseBlockedSave();
         service.shutdown(Duration.ofSeconds(2));
     }
 
@@ -82,10 +87,87 @@ class PlayerProfileServiceTest {
         assertEquals(1, repository.saveCalls);
     }
 
+    @Test
+    void saveAndUnloadRemovesSuccessfullySavedProfileFromCache() {
+        service.loadOrCreate(UUID_VALUE).join();
+
+        service.saveAndUnload(UUID_VALUE).join();
+
+        assertFalse(service.cachedProfile(UUID_VALUE).isPresent());
+        assertEquals(ProfileLoadState.NOT_LOADED, service.loadState(UUID_VALUE));
+        assertTrue(repository.findByUuid(UUID_VALUE).isPresent());
+    }
+
+    @Test
+    void failedLogoutSaveKeepsProfileCachedForLaterRecovery() {
+        PlayerProfile original = service.loadOrCreate(UUID_VALUE).join();
+        repository.failSaves = true;
+
+        assertThrows(CompletionException.class, () -> service.saveAndUnload(UUID_VALUE).join());
+
+        assertEquals(original, service.cachedProfile(UUID_VALUE).orElseThrow());
+        assertEquals(ProfileLoadState.ERROR, service.loadState(UUID_VALUE));
+    }
+
+    @Test
+    void oldQuitSaveDoesNotUnloadCacheUsedByNewSession() throws Exception {
+        service.beginSession(UUID_VALUE);
+        service.loadOrCreate(UUID_VALUE).join();
+        repository.blockNextSave();
+
+        var oldQuitSave = service.saveAndUnload(UUID_VALUE);
+        assertTrue(repository.awaitBlockedSave());
+        service.beginSession(UUID_VALUE);
+        repository.releaseBlockedSave();
+        oldQuitSave.join();
+
+        assertTrue(service.cachedProfile(UUID_VALUE).isPresent());
+        assertEquals(ProfileLoadState.LOADED, service.loadState(UUID_VALUE));
+    }
+
+    @Test
+    void successfulManualSaveRecoversErrorLoadState() {
+        service.loadOrCreate(UUID_VALUE).join();
+        repository.failSaves = true;
+        assertThrows(CompletionException.class, () -> service.saveAndUnload(UUID_VALUE).join());
+        repository.failSaves = false;
+
+        CachedProfilesSaveResult result = service.saveCachedProfiles().join();
+
+        assertEquals(1, result.successCount());
+        assertEquals(ProfileLoadState.LOADED, service.loadState(UUID_VALUE));
+    }
+
+    @Test
+    void manualSaveReportsFailureAndKeepsCachedProfile() {
+        PlayerProfile original = service.loadOrCreate(UUID_VALUE).join();
+        repository.failSaves = true;
+
+        CachedProfilesSaveResult result = service.saveCachedProfiles().join();
+
+        assertEquals(0, result.successCount());
+        assertEquals(1, result.failureCount());
+        assertTrue(result.failures().containsKey(UUID_VALUE));
+        assertEquals(original, service.cachedProfile(UUID_VALUE).orElseThrow());
+    }
+
+    @Test
+    void manualSaveReportsSuccessfulCachedProfiles() {
+        service.loadOrCreate(UUID_VALUE).join();
+
+        CachedProfilesSaveResult result = service.saveCachedProfiles().join();
+
+        assertEquals(1, result.successCount());
+        assertEquals(0, result.failureCount());
+        assertEquals(1, repository.saveCalls);
+    }
+
     private static final class FailingRepository implements PlayerRepository {
         private final Map<UUID, PlayerProfile> profiles = new HashMap<>();
         private boolean failSaves;
         private int saveCalls;
+        private volatile CountDownLatch saveStarted;
+        private volatile CountDownLatch allowSave;
 
         @Override
         public void initialize() {
@@ -106,8 +188,40 @@ class PlayerProfileServiceTest {
             if (failSaves) {
                 throw new IllegalStateException("simulated save failure");
             }
+            CountDownLatch started = saveStarted;
+            CountDownLatch release = allowSave;
+            if (started != null && release != null) {
+                started.countDown();
+                try {
+                    if (!release.await(2, TimeUnit.SECONDS)) {
+                        throw new IllegalStateException("Timed out waiting to release test save");
+                    }
+                } catch (InterruptedException exception) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException(exception);
+                } finally {
+                    saveStarted = null;
+                    allowSave = null;
+                }
+            }
             saveCalls++;
             profiles.put(profile.uuid(), profile);
+        }
+
+        void blockNextSave() {
+            saveStarted = new CountDownLatch(1);
+            allowSave = new CountDownLatch(1);
+        }
+
+        boolean awaitBlockedSave() throws InterruptedException {
+            return saveStarted.await(2, TimeUnit.SECONDS);
+        }
+
+        void releaseBlockedSave() {
+            CountDownLatch release = allowSave;
+            if (release != null) {
+                release.countDown();
+            }
         }
     }
 }
