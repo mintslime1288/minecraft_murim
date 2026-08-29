@@ -65,6 +65,58 @@ class SqlitePlayerRepositoryTest {
     }
 
     @Test
+    void existingFirstRateProfileLoadsWithoutDataChanges() {
+        SqlitePlayerRepository repository = repository();
+        repository.initialize();
+        PlayerProfile existing = new PlayerProfile(
+                UUID_VALUE,
+                MajorRealm.FIRST_RATE,
+                RealmPhase.PEAK,
+                4000,
+                Set.of("training_trial", "black_pine_chief"),
+                Set.of("QI_BAR", "MVP_COMPLETE_TITLE"),
+                CREATED_AT,
+                CREATED_AT.plusSeconds(30)
+        );
+
+        repository.findOrCreate(PlayerProfile.createDefault(UUID_VALUE, CREATED_AT));
+        repository.save(existing);
+
+        assertEquals(existing, repository.findByUuid(UUID_VALUE).orElseThrow());
+    }
+
+    @Test
+    void advancedRealmProfileSurvivesRepositoryRecreation() {
+        SqlitePlayerRepository firstRepository = repository();
+        firstRepository.initialize();
+        PlayerProfile advanced = new PlayerProfile(
+                UUID_VALUE,
+                MajorRealm.SAENGSAGYEONG_REALM,
+                RealmPhase.COMPLETE,
+                280000,
+                Set.of(
+                        "training_trial",
+                        "black_pine_chief",
+                        "jeoljeong_breakthrough_trial",
+                        "chojeoljeong_breakthrough_trial",
+                        "hwagyeong_breakthrough_trial",
+                        "hyeongyeong_breakthrough_trial",
+                        "saengsagyeong_breakthrough_trial"
+                ),
+                Set.of("QI_BAR", "MVP_COMPLETE_TITLE"),
+                CREATED_AT,
+                CREATED_AT.plusSeconds(60)
+        );
+        firstRepository.findOrCreate(PlayerProfile.createDefault(UUID_VALUE, CREATED_AT));
+        firstRepository.save(advanced);
+
+        SqlitePlayerRepository restartedRepository = repository();
+        restartedRepository.initialize();
+
+        assertEquals(advanced, restartedRepository.findByUuid(UUID_VALUE).orElseThrow());
+    }
+
+    @Test
     void findOrCreateDoesNotDuplicateOrReplaceExistingUuid() {
         SqlitePlayerRepository repository = repository();
         repository.initialize();

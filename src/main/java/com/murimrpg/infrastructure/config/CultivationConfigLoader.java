@@ -17,6 +17,17 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public final class CultivationConfigLoader {
+    public CultivationProgression load(Path path, int expectedStageCount) {
+        CultivationProgression progression = load(path);
+        if (progression.stages().size() != expectedStageCount) {
+            throw new IllegalArgumentException(
+                    "Expected " + expectedStageCount + " cultivation stages but found "
+                            + progression.stages().size()
+            );
+        }
+        return progression;
+    }
+
     public CultivationProgression load(Path path) {
         YamlConfiguration configuration = new YamlConfiguration();
         try {

@@ -57,6 +57,22 @@ public final class CultivationProgression {
                                 + stage.nextStageId().orElse("none")
                 );
             }
+            if (index > 0) {
+                CultivationStageDefinition previous = sorted.get(index - 1);
+                requireNonDecreasing(
+                        "required cultivation EXP",
+                        previous.requiredCultivationExp(),
+                        stage.requiredCultivationExp(),
+                        stage.stageId()
+                );
+                requireNonDecreasing("max qi", previous.maxQi(), stage.maxQi(), stage.stageId());
+                requireNonDecreasing(
+                        "qi regeneration",
+                        previous.qiRegeneration(),
+                        stage.qiRegeneration(),
+                        stage.stageId()
+                );
+            }
         }
         this.stages = List.copyOf(sorted);
         this.stagesById = Map.copyOf(byId);
@@ -118,6 +134,15 @@ public final class CultivationProgression {
             result.addAll(stage.unlocks());
         }
         return Set.copyOf(result);
+    }
+
+    private static void requireNonDecreasing(String field, long previous, long current, String stageId) {
+        if (current < previous) {
+            throw new IllegalArgumentException(
+                    "Cultivation stage " + field + " must not decrease at " + stageId
+                            + "; previous=" + previous + ", current=" + current
+            );
+        }
     }
 
     private record RealmKey(MajorRealm majorRealm, RealmPhase phase) {

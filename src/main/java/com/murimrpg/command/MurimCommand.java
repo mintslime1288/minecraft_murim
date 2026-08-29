@@ -7,6 +7,8 @@ import com.murimrpg.domain.ProgressUpdate;
 import com.murimrpg.domain.PromotionResult;
 import com.murimrpg.domain.RealmPhase;
 import com.murimrpg.domain.RequirementChange;
+import com.murimrpg.domain.CharacterData;
+import com.murimrpg.domain.Family;
 import com.murimrpg.infrastructure.paper.PromotionFeedback;
 import com.murimrpg.presentation.StatusMessageFactory;
 import com.murimrpg.service.CachedProfilesSaveResult;
@@ -14,6 +16,8 @@ import com.murimrpg.service.PlayerProfileService;
 import com.murimrpg.service.ProfileLoadState;
 import com.murimrpg.service.ProgressionService;
 import com.murimrpg.service.StatusService;
+import com.murimrpg.service.CharacterCreationService;
+import com.murimrpg.ui.CharacterCreationGui;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +41,7 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
     );
     private static final List<String> ADMIN_COMMANDS = List.of(
             "addexp", "setexp", "requirement", "stage", "testprogress",
-            "setprogress", "resetprogress", "debugprofile", "saveprofiles"
+            "setprogress", "resetprogress", "debugprofile", "saveprofiles", "character"
     );
     private static final List<String> REQUIREMENT_ACTIONS = List.of("grant", "revoke");
     private static final List<String> TEST_PROGRESS_ACTIONS = List.of("prepare", "clear");
@@ -49,6 +53,8 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
     private final PromotionFeedback promotionFeedback;
     private final Executor mainThreadExecutor;
     private final Logger logger;
+    private final CharacterCreationService characterCreationService;
+    private final CharacterCreationGui characterGui;
 
     public MurimCommand(
             StatusService statusService,
@@ -57,7 +63,9 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             StatusMessageFactory messageFactory,
             PromotionFeedback promotionFeedback,
             Executor mainThreadExecutor,
-            Logger logger
+            Logger logger,
+            CharacterCreationService characterCreationService,
+            CharacterCreationGui characterGui
     ) {
         this.statusService = statusService;
         this.profileService = profileService;
@@ -66,6 +74,8 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
         this.promotionFeedback = promotionFeedback;
         this.mainThreadExecutor = mainThreadExecutor;
         this.logger = logger;
+        this.characterCreationService = characterCreationService;
+        this.characterGui = characterGui;
     }
 
     @Override
@@ -75,6 +85,9 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             @NotNull String label,
             @NotNull String[] args
     ) {
+        if ("gangho".equalsIgnoreCase(command.getName())) {
+            return handleGangho(sender, args);
+        }
         if (args.length == 1 && "status".equalsIgnoreCase(args[0])) {
             showStatus(sender);
             return true;
@@ -97,6 +110,46 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
         }
         sender.sendMessage(messageFactory.usage(label));
         return true;
+    }
+
+    private boolean handleGangho(CommandSender sender, String[] args) {
+        if (args.length < 1 || args.length > 2) {
+            sender.sendMessage(messageFactory.error("사용법: /강호 <스탯|가문|체질|리롤|초기화> [player]")); return true;
+        }
+        String action = ganghoAction(args[0]);
+        if (action == null) {
+            sender.sendMessage(messageFactory.error("알 수 없는 강호 명령입니다.")); return true;
+        }
+        String targetName = args.length == 2 ? args[1] : sender instanceof Player player ? player.getName() : null;
+        if (targetName == null) { sender.sendMessage(messageFactory.error("콘솔에서는 플레이어 이름이 필요합니다.")); return true; }
+        boolean changesCharacter = "reroll".equals(action) || "reset".equals(action);
+        boolean targetsOtherPlayer = !(sender instanceof Player player) || !player.getName().equalsIgnoreCase(targetName);
+        if ((changesCharacter || targetsOtherPlayer) && !sender.hasPermission("murim.admin")) { sender.sendMessage(messageFactory.error("권한이 없습니다: murim.admin")); return true; }
+        Player target = Bukkit.getPlayerExact(targetName);
+        if (target == null) { sender.sendMessage(messageFactory.error("온라인 플레이어를 찾을 수 없습니다: " + targetName)); return true; }
+        if ("stats".equals(action)) { profileService.loadOrCreate(target.getUniqueId()).whenCompleteAsync((profile, error) -> {
+            if (error != null) reportFailure(sender, "스탯 조회에 실패했습니다.", error); else sendCharacterStats(sender, target, profile.characterData());
+        }, mainThreadExecutor); return true; }
+        if ("family".equals(action) || "constitution".equals(action)) { profileService.loadOrCreate(target.getUniqueId()).whenCompleteAsync((profile, error) -> {
+            if (error != null) { reportFailure(sender, "캐릭터 정보 조회에 실패했습니다.", error); return; }
+            CharacterData data = profile.characterData();
+            if (!data.completed()) { sender.sendMessage(messageFactory.info(target.getName() + ": 캐릭터 생성 미확정")); return; }
+            String value = "family".equals(action) ? data.family().displayName() : data.constitution().displayName();
+            sender.sendMessage(messageFactory.info(target.getName() + "의 " + ("family".equals(action) ? "가문" : "체질") + ": " + value));
+        }, mainThreadExecutor); return true; }
+        handleAdmin(sender, new String[] { "admin", "character", action, targetName });
+        return true;
+    }
+
+    private String ganghoAction(String input) {
+        return switch (input.toLowerCase(Locale.ROOT)) {
+            case "stats", "stat", "스탯", "능력치" -> "stats";
+            case "family", "가문" -> "family";
+            case "constitution", "체질" -> "constitution";
+            case "reroll", "리롤" -> "reroll";
+            case "reset", "리셋", "초기화" -> "reset";
+            default -> null;
+        };
     }
 
     private void showStatus(CommandSender sender) {
@@ -197,6 +250,7 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             case "resetprogress" -> resetProgress(sender, args);
             case "debugprofile" -> debugProfile(sender, args);
             case "saveprofiles" -> saveProfiles(sender, args);
+            case "character" -> adminCharacter(sender, args);
             default -> adminUsage(sender);
         }
     }
@@ -305,9 +359,13 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             return;
         }
         boolean prepare = "prepare".equalsIgnoreCase(args[3]);
+        long finalRequiredExp = progressionService.progression().finalStage().requiredCultivationExp();
+        int requirementCount = progressionService.progression().requirementIds().size();
         sender.sendMessage(messageFactory.info(
                 prepare
-                        ? "[테스트 전용] 삼류·입문, EXP 4000, 두 경계 조건을 준비합니다. 자동 승급하지 않습니다."
+                        ? "[테스트 전용] 삼류·입문, EXP " + finalRequiredExp
+                                + ", 전체 경계 조건 " + requirementCount
+                                + "개를 준비합니다. 자동 승급하지 않습니다."
                         : "[테스트 전용] 삼류·입문, EXP 0, 조건 없음, 기본 해금으로 초기화합니다."
         ));
         CompletableFuture<PlayerProfile> future = prepare
@@ -489,6 +547,7 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(messageFactory.error(
                 "관리자 명령: addexp, setexp, requirement, stage, testprogress, setprogress, "
                         + "resetprogress, debugprofile, saveprofiles"
+                        + ", character"
         ));
     }
 
@@ -516,6 +575,11 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             @NotNull String alias,
             @NotNull String[] args
     ) {
+        if ("gangho".equalsIgnoreCase(command.getName())) {
+            if (args.length == 1) return matches(List.of("스탯", "가문", "체질", "리롤", "초기화"), args[0]);
+            if (args.length == 2 && sender.hasPermission("murim.admin")) return onlinePlayers(args[1]);
+            return List.of();
+        }
         if (args.length == 1) {
             return matches(ROOT_COMMANDS, args[0]);
         }
@@ -530,6 +594,9 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             if ("requirement".equals(subcommand)) {
                 return matches(REQUIREMENT_ACTIONS, args[2]);
             }
+            if ("character".equals(subcommand)) {
+                return matches(List.of("stats", "reroll", "reset"), args[2]);
+            }
             if ("saveprofiles".equals(subcommand)) {
                 return List.of();
             }
@@ -543,7 +610,9 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
                         Arrays.stream(MajorRealm.values()).map(MajorRealm::id).toList(),
                         args[3]
                 );
-                case "addexp", "setexp" -> matches(List.of("0", "100", "4000"), args[3]);
+                case "addexp" -> matches(cultivationExpSuggestions(false), args[3]);
+                case "setexp" -> matches(cultivationExpSuggestions(true), args[3]);
+                case "character" -> onlinePlayers(args[3]);
                 default -> List.of();
             };
         }
@@ -559,13 +628,40 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             }
         }
         if (args.length == 6 && "setprogress".equals(subcommand)) {
-            return matches(List.of("0", "100", "700", "2200", "4000"), args[5]);
+            return matches(cultivationExpSuggestions(true), args[5]);
         }
         return List.of();
     }
 
     private List<String> onlinePlayers(String input) {
         return matches(Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted().toList(), input);
+    }
+
+    private void adminCharacter(CommandSender sender, String[] args) {
+        if (args.length != 4 || !("stats".equalsIgnoreCase(args[2]) || "reset".equalsIgnoreCase(args[2]) || "reroll".equalsIgnoreCase(args[2]))) {
+            sender.sendMessage(messageFactory.error("사용법: /murim admin character <stats|reset|reroll> <player>")); return;
+        }
+        Player target = onlinePlayer(sender, args[3]); if (target == null) return;
+        String action = args[2].toLowerCase(Locale.ROOT);
+        if ("stats".equals(action)) { profileService.loadOrCreate(target.getUniqueId()).whenCompleteAsync((p,e) -> { if(e != null) reportFailure(sender,"캐릭터 조회에 실패했습니다.",e); else sendCharacterStats(sender,target,p.characterData()); }, mainThreadExecutor); return; }
+        if ("reset".equals(action)) { characterCreationService.reset(target.getUniqueId()).whenCompleteAsync((p,e) -> { if(e != null) reportFailure(sender,"캐릭터 초기화에 실패했습니다.",e); else { sender.sendMessage(messageFactory.success(target.getName()+"의 최초 생성 상태를 초기화했습니다.")); characterGui.openIfNeeded(target); } }, mainThreadExecutor); return; }
+        characterCreationService.reroll(target.getUniqueId()).whenCompleteAsync((d,e) -> { if(e != null) reportFailure(sender,"캐릭터 리롤에 실패했습니다.",e); else { sender.sendMessage(messageFactory.success(target.getName()+"의 드래프트를 다시 뽑았습니다.")); characterGui.openIfNeeded(target); } }, mainThreadExecutor);
+    }
+
+    private void sendCharacterStats(CommandSender sender, Player target, CharacterData data) {
+        if (!data.completed()) { sender.sendMessage(messageFactory.info(target.getName()+": 캐릭터 생성 미확정, 리롤 "+data.rerollsUsed()+"회 사용")); return; }
+        int strength = data.baseStrength() + (data.family() == Family.STREET ? 0 : characterCreationService.settings().strengthBonuses().get(data.family()));
+        int speed = data.baseSpeed() + (data.family() == Family.STREET ? 0 : characterCreationService.settings().speedBonuses().get(data.family()));
+        sender.sendMessage(messageFactory.info(target.getName()+": "+data.family().displayName()+", 재능 "+(int)(data.talentMultiplier()*100)+"%, 힘 "+strength+", 속도 "+speed+", "+data.constitution().displayName()));
+    }
+
+    private List<String> cultivationExpSuggestions(boolean includeZero) {
+        return progressionService.progression().stages().stream()
+                .map(stage -> stage.requiredCultivationExp())
+                .filter(value -> includeZero || value > 0)
+                .distinct()
+                .map(String::valueOf)
+                .toList();
     }
 
     private List<String> matches(List<String> candidates, String input) {

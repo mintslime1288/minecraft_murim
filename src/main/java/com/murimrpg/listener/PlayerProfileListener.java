@@ -3,6 +3,7 @@ package com.murimrpg.listener;
 import com.murimrpg.presentation.StatusMessageFactory;
 import com.murimrpg.service.PlayerProfileService;
 import com.murimrpg.service.ProgressionService;
+import com.murimrpg.ui.CharacterCreationGui;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
@@ -20,19 +21,22 @@ public final class PlayerProfileListener implements Listener {
     private final Executor mainThreadExecutor;
     private final StatusMessageFactory messageFactory;
     private final Logger logger;
+    private final CharacterCreationGui characterGui;
 
     public PlayerProfileListener(
             PlayerProfileService profileService,
             ProgressionService progressionService,
             Executor mainThreadExecutor,
             StatusMessageFactory messageFactory,
-            Logger logger
+            Logger logger,
+            CharacterCreationGui characterGui
     ) {
         this.profileService = profileService;
         this.progressionService = progressionService;
         this.mainThreadExecutor = mainThreadExecutor;
         this.messageFactory = messageFactory;
         this.logger = logger;
+        this.characterGui = characterGui;
     }
 
     @EventHandler
@@ -41,6 +45,8 @@ public final class PlayerProfileListener implements Listener {
         profileService.beginSession(uuid);
         profileService.loadOrCreate(uuid).whenCompleteAsync((profile, error) -> {
             if (error == null) {
+                Player player = Bukkit.getPlayer(uuid);
+                if (player != null) characterGui.openIfNeeded(player);
                 return;
             }
             logger.log(Level.SEVERE, "Failed to load player profile for " + uuid, rootCause(error));
@@ -55,6 +61,7 @@ public final class PlayerProfileListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         progressionService.forgetPromotionRequest(uuid);
+        characterGui.forget(uuid);
         profileService.saveAndUnload(uuid).whenComplete((result, error) -> {
             if (error != null) {
                 logger.log(Level.SEVERE, "Failed to save player profile on quit for " + uuid, rootCause(error));

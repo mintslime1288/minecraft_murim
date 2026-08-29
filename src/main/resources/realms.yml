@@ -142,3 +142,243 @@ realms:
     qi-regeneration: 10
     promotion-requirements: []
     unlocks: [MVP_COMPLETE_TITLE]
+    next-stage-id: jeoljeong_realm_early
+
+  - stage-id: jeoljeong_realm_early
+    major-realm-id: JEOLJEONG_REALM
+    phase-id: EARLY
+    display-name: 절정경·초기
+    order: 13
+    required-cultivation-exp: 5000
+    max-qi: 380
+    qi-regeneration: 11
+    promotion-requirements: [jeoljeong_breakthrough_trial]
+    unlocks: []
+    next-stage-id: jeoljeong_realm_middle
+
+  - stage-id: jeoljeong_realm_middle
+    major-realm-id: JEOLJEONG_REALM
+    phase-id: MIDDLE
+    display-name: 절정경·중기
+    order: 14
+    required-cultivation-exp: 6500
+    max-qi: 410
+    qi-regeneration: 12
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: jeoljeong_realm_late
+
+  - stage-id: jeoljeong_realm_late
+    major-realm-id: JEOLJEONG_REALM
+    phase-id: LATE
+    display-name: 절정경·후기
+    order: 15
+    required-cultivation-exp: 8000
+    max-qi: 440
+    qi-regeneration: 13
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: jeoljeong_realm_complete
+
+  - stage-id: jeoljeong_realm_complete
+    major-realm-id: JEOLJEONG_REALM
+    phase-id: COMPLETE
+    display-name: 절정경·원만
+    order: 16
+    required-cultivation-exp: 10000
+    max-qi: 480
+    qi-regeneration: 14
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: chojeoljeong_realm_early
+
+  - stage-id: chojeoljeong_realm_early
+    major-realm-id: CHOJEOLJEONG_REALM
+    phase-id: EARLY
+    display-name: 초절정·초기
+    order: 17
+    required-cultivation-exp: 12500
+    max-qi: 520
+    qi-regeneration: 15
+    promotion-requirements: [chojeoljeong_breakthrough_trial]
+    unlocks: []
+    next-stage-id: chojeoljeong_realm_middle
+
+  - stage-id: chojeoljeong_realm_middle
+    major-realm-id: CHOJEOLJEONG_REALM
+    phase-id: MIDDLE
+    display-name: 초절정·중기
+    order: 18
+    required-cultivation-exp: 15500
+    max-qi: 560
+    qi-regeneration: 16
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: chojeoljeong_realm_late
+
+  - stage-id: chojeoljeong_realm_late
+    major-realm-id: CHOJEOLJEONG_REALM
+    phase-id: LATE
+    display-name: 초절정·후기
+    order: 19
+    required-cultivation-exp: 19000
+    max-qi: 600
+    qi-regeneration: 17
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: chojeoljeong_realm_complete
+
+  - stage-id: chojeoljeong_realm_complete
+    major-realm-id: CHOJEOLJEONG_REALM
+    phase-id: COMPLETE
+    display-name: 초절정·원만
+    order: 20
+    required-cultivation-exp: 23000
+    max-qi: 650
+    qi-regeneration: 18
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: hwagyeong_realm_early
+
+  - stage-id: hwagyeong_realm_early
+    major-realm-id: HWAGYEONG_REALM
+    phase-id: EARLY
+    display-name: 화경·초기
+    order: 21
+    required-cultivation-exp: 28000
+    max-qi: 700
+    qi-regeneration: 19
+    promotion-requirements: [hwagyeong_breakthrough_trial]
+    unlocks: []
+    next-stage-id: hwagyeong_realm_middle
+
+  - stage-id: hwagyeong_realm_middle
+    major-realm-id: HWAGYEONG_REALM
+    phase-id: MIDDLE
+    display-name: 화경·중기
+    order: 22
+    required-cultivation-exp: 34000
+    max-qi: 760
+    qi-regeneration: 20
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: hwagyeong_realm_late
+
+  - stage-id: hwagyeong_realm_late
+    major-realm-id: HWAGYEONG_REALM
+    phase-id: LATE
+    display-name: 화경·후기
+    order: 23
+    required-cultivation-exp: 41000
+    max-qi: 820
+    qi-regeneration: 21
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: hwagyeong_realm_complete
+
+  - stage-id: hwagyeong_realm_complete
+    major-realm-id: HWAGYEONG_REALM
+    phase-id: COMPLETE
+    display-name: 화경·원만
+    order: 24
+    required-cultivation-exp: 50000
+    max-qi: 900
+    qi-regeneration: 22
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: hyeongyeong_realm_early
+
+  - stage-id: hyeongyeong_realm_early
+    major-realm-id: HYEONGYEONG_REALM
+    phase-id: EARLY
+    display-name: 현경·초기
+    order: 25
+    required-cultivation-exp: 62000
+    max-qi: 980
+    qi-regeneration: 23
+    promotion-requirements: [hyeongyeong_breakthrough_trial]
+    unlocks: []
+    next-stage-id: hyeongyeong_realm_middle
+
+  - stage-id: hyeongyeong_realm_middle
+    major-realm-id: HYEONGYEONG_REALM
+    phase-id: MIDDLE
+    display-name: 현경·중기
+    order: 26
+    required-cultivation-exp: 76000
+    max-qi: 1070
+    qi-regeneration: 24
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: hyeongyeong_realm_late
+
+  - stage-id: hyeongyeong_realm_late
+    major-realm-id: HYEONGYEONG_REALM
+    phase-id: LATE
+    display-name: 현경·후기
+    order: 27
+    required-cultivation-exp: 93000
+    max-qi: 1170
+    qi-regeneration: 25
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: hyeongyeong_realm_complete
+
+  - stage-id: hyeongyeong_realm_complete
+    major-realm-id: HYEONGYEONG_REALM
+    phase-id: COMPLETE
+    display-name: 현경·원만
+    order: 28
+    required-cultivation-exp: 115000
+    max-qi: 1280
+    qi-regeneration: 26
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: saengsagyeong_realm_early
+
+  - stage-id: saengsagyeong_realm_early
+    major-realm-id: SAENGSAGYEONG_REALM
+    phase-id: EARLY
+    display-name: 생사경·초기
+    order: 29
+    required-cultivation-exp: 145000
+    max-qi: 1400
+    qi-regeneration: 27
+    promotion-requirements: [saengsagyeong_breakthrough_trial]
+    unlocks: []
+    next-stage-id: saengsagyeong_realm_middle
+
+  - stage-id: saengsagyeong_realm_middle
+    major-realm-id: SAENGSAGYEONG_REALM
+    phase-id: MIDDLE
+    display-name: 생사경·중기
+    order: 30
+    required-cultivation-exp: 180000
+    max-qi: 1530
+    qi-regeneration: 28
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: saengsagyeong_realm_late
+
+  - stage-id: saengsagyeong_realm_late
+    major-realm-id: SAENGSAGYEONG_REALM
+    phase-id: LATE
+    display-name: 생사경·후기
+    order: 31
+    required-cultivation-exp: 225000
+    max-qi: 1670
+    qi-regeneration: 29
+    promotion-requirements: []
+    unlocks: []
+    next-stage-id: saengsagyeong_realm_complete
+
+  - stage-id: saengsagyeong_realm_complete
+    major-realm-id: SAENGSAGYEONG_REALM
+    phase-id: COMPLETE
+    display-name: 생사경·원만
+    order: 32
+    required-cultivation-exp: 280000
+    max-qi: 1820
+    qi-regeneration: 30
+    promotion-requirements: []
+    unlocks: []

@@ -1,0 +1,5 @@
+organizations:
+  - {id: HUASHAN_SECT, display-name: 화산파, description: 매화와 검을 숭상하는 정파 문파입니다.}
+martial-arts:
+  - {id: LIUHE_ART, display-name: 육합공, description: 화산파의 기초 내공심법입니다.}
+  - {id: PURPLE_MIST_DIVINE_ART, display-name: 자하신공, description: 화산파의 고급 내공심법입니다.}

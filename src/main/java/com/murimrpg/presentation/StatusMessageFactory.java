@@ -69,8 +69,12 @@ public final class StatusMessageFactory {
         messages.add(Component.text("MurimRPG 경지", NamedTextColor.GOLD));
         messages.add(line("현재 경지: ", "[" + view.currentStage().displayName() + "]", NamedTextColor.AQUA));
         if (view.nextStage().isEmpty()) {
-            messages.add(Component.text("MVP 최고 경지 도달", NamedTextColor.GOLD));
-            messages.add(Component.text("다음 대경지는 아직 구현되지 않았습니다.", NamedTextColor.YELLOW));
+            messages.add(line(
+                    "현재 최고 경지: ",
+                    "[" + view.currentStage().displayName() + "]",
+                    NamedTextColor.GOLD
+            ));
+            messages.add(Component.text("다음 경지는 설정되어 있지 않습니다.", NamedTextColor.YELLOW));
         } else {
             var next = view.nextStage().orElseThrow();
             messages.add(line(
@@ -129,8 +133,9 @@ public final class StatusMessageFactory {
                             result.missingRequirements().isEmpty() ? NamedTextColor.GREEN : NamedTextColor.RED
                     )
             );
-            case MAXIMUM_STAGE -> List.of(Component.text(
-                    "현재 MVP의 최고 단계인 [일류·절정]입니다.",
+            case MAXIMUM_STAGE -> List.of(line(
+                    "현재 최고 경지인 ",
+                    "[" + result.currentStage().orElseThrow().displayName() + "]입니다.",
                     NamedTextColor.GOLD
             ));
             case IN_PROGRESS -> List.of(Component.text(

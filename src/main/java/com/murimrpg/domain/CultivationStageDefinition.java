@@ -41,7 +41,7 @@ public record CultivationStageDefinition(
         if (displayName.isBlank()) {
             throw new IllegalArgumentException("Display name is blank for stage " + stageId);
         }
-        if (order <= 0 || requiredCultivationExp < 0 || maxQi <= 0 || qiRegeneration < 0) {
+        if (order <= 0 || requiredCultivationExp < 0 || maxQi <= 0 || qiRegeneration <= 0) {
             throw new IllegalArgumentException("Invalid numeric values for stage " + stageId);
         }
         promotionRequirements = Set.copyOf(promotionRequirements);

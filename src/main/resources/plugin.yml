@@ -7,7 +7,34 @@ commands:
   murim:
     description: Shows MurimRPG status, profile, realm progression, and administrator test tools.
     usage: /murim <status|profile|realm|cultivate|admin>
+  gangho:
+    description: 강호이문록 메인 메뉴입니다.
+    aliases: [강호, 강호이문록]
+    usage: /강호 [도움말|내정보|상태|설정|공지]
+  gangho_profile: {description: 내 강호 정보를 표시합니다., aliases: [내정보]}
+  gangho_sect: {description: 문파 메뉴입니다., aliases: [문파]}
+  gangho_martial: {description: 무공 메뉴입니다., aliases: [무공]}
+  gangho_qi: {description: 내공 정보입니다., aliases: [내공]}
+  gangho_meditate: {description: 운기조식입니다., aliases: [운기조식]}
+  gangho_realm: {description: 경지 정보입니다., aliases: [경지]}
+  gangho_quest: {description: 퀘스트입니다., aliases: [퀘스트]}
+  gangho_encounter: {description: 기연입니다., aliases: [기연]}
+  gangho_codex: {description: 도감입니다., aliases: [도감]}
+  gangho_map: {description: 지도입니다., aliases: [지도]}
+  gangho_region: {description: 지역 정보입니다., aliases: [지역]}
+  gangho_route: {description: 길찾기입니다., aliases: [길찾기]}
+  gangho_admin: {description: 강호이문록 관리자 명령입니다., aliases: [강호관리], permission: gangho.admin}
+  gangho_dev: {description: 강호이문록 개발 명령입니다., aliases: [강호dev], permission: gangho.dev}
 permissions:
+  gangho.command:
+    description: 강호이문록 플레이어 명령을 허용합니다.
+    default: true
+  gangho.admin:
+    description: 강호이문록 관리자 명령을 허용합니다.
+    default: op
+  gangho.dev:
+    description: 강호이문록 개발 명령을 허용합니다.
+    default: op
   murimrpg.command.status:
     description: Allows use of /murim status.
     default: true

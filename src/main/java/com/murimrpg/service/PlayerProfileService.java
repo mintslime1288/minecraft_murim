@@ -1,6 +1,7 @@
 package com.murimrpg.service;
 
 import com.murimrpg.domain.PlayerProfile;
+import com.murimrpg.domain.CharacterData;
 import com.murimrpg.domain.ProgressUpdate;
 import com.murimrpg.repository.PlayerRepository;
 import java.time.Clock;
@@ -89,6 +90,16 @@ public final class PlayerProfileService {
             return ProfileMutation.saved(reset, reset);
         });
     }
+
+    public CompletableFuture<PlayerProfile> saveCharacter(UUID uuid, CharacterData data) {
+        return mutate(uuid, (current, now) -> {
+            PlayerProfile updated = current.withCharacterData(data, now);
+            return ProfileMutation.saved(updated, updated);
+        });
+    }
+
+    public CompletableFuture<Integer> profileCount() { return submit(repository::countProfiles); }
+    public CompletableFuture<Integer> constitutionOwnerCount(String constitutionId) { return submit(() -> repository.countCompletedWithConstitution(constitutionId)); }
 
     public <T> CompletableFuture<T> mutate(
             UUID uuid,

@@ -24,7 +24,21 @@ public enum MajorRealm {
             RealmPhase.MIDDLE,
             RealmPhase.LATE,
             RealmPhase.PEAK
-    ));
+    )),
+    JEOLJEONG_REALM("JEOLJEONG_REALM", "절정경", advancedPhases()),
+    CHOJEOLJEONG_REALM("CHOJEOLJEONG_REALM", "초절정", advancedPhases()),
+    HWAGYEONG_REALM("HWAGYEONG_REALM", "화경", advancedPhases()),
+    HYEONGYEONG_REALM("HYEONGYEONG_REALM", "현경", advancedPhases()),
+    SAENGSAGYEONG_REALM("SAENGSAGYEONG_REALM", "생사경", advancedPhases());
+
+    private static Set<RealmPhase> advancedPhases() {
+        return Set.of(
+                RealmPhase.EARLY,
+                RealmPhase.MIDDLE,
+                RealmPhase.LATE,
+                RealmPhase.COMPLETE
+        );
+    }
 
     private final String id;
     private final String displayName;

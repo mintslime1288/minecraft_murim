@@ -31,6 +31,16 @@ import org.junit.jupiter.api.Test;
 class ProgressionServiceTest {
     private static final UUID UUID_VALUE = UUID.fromString("7591e7d4-02fc-4cb1-9264-d050216153e7");
     private static final Instant NOW = Instant.parse("2026-08-22T05:00:00Z");
+    private static final long FINAL_STAGE_EXP = 280000;
+    private static final Set<String> ALL_REQUIREMENTS = Set.of(
+            "training_trial",
+            "black_pine_chief",
+            "jeoljeong_breakthrough_trial",
+            "chojeoljeong_breakthrough_trial",
+            "hwagyeong_breakthrough_trial",
+            "hyeongyeong_breakthrough_trial",
+            "saengsagyeong_breakthrough_trial"
+    );
 
     private FakeRepository repository;
     private PlayerProfileService profileService;
@@ -67,7 +77,7 @@ class ProgressionServiceTest {
 
     @Test
     void enoughExpPromotesExactlyOneStagePerRequest() {
-        progressionService.setExp(UUID_VALUE, 4000).join();
+        progressionService.setExp(UUID_VALUE, FINAL_STAGE_EXP).join();
 
         PromotionResult result = progressionService.promote(UUID_VALUE).join();
 
@@ -119,10 +129,65 @@ class ProgressionServiceTest {
     }
 
     @Test
+    void firstRatePeakRequiresJeoljeongTrialAndPromotesToJeoljeongRealm() {
+        assertBoundary(
+                MajorRealm.FIRST_RATE,
+                RealmPhase.PEAK,
+                5000,
+                "jeoljeong_breakthrough_trial",
+                "jeoljeong_realm_early"
+        );
+    }
+
+    @Test
+    void jeoljeongCompleteRequiresChojeoljeongTrial() {
+        assertBoundary(
+                MajorRealm.JEOLJEONG_REALM,
+                RealmPhase.COMPLETE,
+                12500,
+                "chojeoljeong_breakthrough_trial",
+                "chojeoljeong_realm_early"
+        );
+    }
+
+    @Test
+    void chojeoljeongCompleteRequiresHwagyeongTrial() {
+        assertBoundary(
+                MajorRealm.CHOJEOLJEONG_REALM,
+                RealmPhase.COMPLETE,
+                28000,
+                "hwagyeong_breakthrough_trial",
+                "hwagyeong_realm_early"
+        );
+    }
+
+    @Test
+    void hwagyeongCompleteRequiresHyeongyeongTrial() {
+        assertBoundary(
+                MajorRealm.HWAGYEONG_REALM,
+                RealmPhase.COMPLETE,
+                62000,
+                "hyeongyeong_breakthrough_trial",
+                "hyeongyeong_realm_early"
+        );
+    }
+
+    @Test
+    void hyeongyeongCompleteRequiresSaengsagyeongTrial() {
+        assertBoundary(
+                MajorRealm.HYEONGYEONG_REALM,
+                RealmPhase.COMPLETE,
+                145000,
+                "saengsagyeong_breakthrough_trial",
+                "saengsagyeong_realm_early"
+        );
+    }
+
+    @Test
     void rejectsPromotionPastFinalStage() {
         repository.seed(new PlayerProfile(
-                UUID_VALUE, MajorRealm.FIRST_RATE, RealmPhase.PEAK, 4000,
-                Set.of("training_trial", "black_pine_chief"), Set.of("QI_BAR"), NOW, NOW
+                UUID_VALUE, MajorRealm.SAENGSAGYEONG_REALM, RealmPhase.COMPLETE, FINAL_STAGE_EXP,
+                ALL_REQUIREMENTS, Set.of("QI_BAR", "MVP_COMPLETE_TITLE"), NOW, NOW
         ));
 
         PromotionResult result = progressionService.promote(UUID_VALUE).join();
@@ -132,7 +197,7 @@ class ProgressionServiceTest {
 
     @Test
     void concurrentPromotionRequestDoesNotPromoteTwice() throws Exception {
-        progressionService.setExp(UUID_VALUE, 4000).join();
+        progressionService.setExp(UUID_VALUE, FINAL_STAGE_EXP).join();
         repository.blockNextSave();
 
         var first = progressionService.promote(UUID_VALUE);
@@ -147,7 +212,7 @@ class ProgressionServiceTest {
 
     @Test
     void sameTickTokenDoesNotPromoteTwiceAfterFirstRequestCompletes() {
-        progressionService.setExp(UUID_VALUE, 4000).join();
+        progressionService.setExp(UUID_VALUE, FINAL_STAGE_EXP).join();
 
         PromotionResult first = progressionService.promote(UUID_VALUE, 42).join();
         PromotionResult duplicate = progressionService.promote(UUID_VALUE, 42).join();
@@ -175,14 +240,41 @@ class ProgressionServiceTest {
         PlayerProfile prepared = progressionService.prepareTestProgress(UUID_VALUE).join();
         PlayerProfile cleared = progressionService.clearTestProgress(UUID_VALUE).join();
 
-        assertEquals(4000, prepared.cultivationExp());
-        assertEquals(Set.of("training_trial", "black_pine_chief"), prepared.completedRequirements());
+        assertEquals(FINAL_STAGE_EXP, prepared.cultivationExp());
+        assertEquals(ALL_REQUIREMENTS, prepared.completedRequirements());
         assertEquals(Set.of("QI_BAR"), prepared.unlockedContent());
         assertEquals(MajorRealm.THIRD_RATE, prepared.majorRealm());
         assertEquals(RealmPhase.INITIATE, prepared.phase());
         assertEquals(0, cleared.cultivationExp());
         assertTrue(cleared.completedRequirements().isEmpty());
         assertEquals(Set.of("QI_BAR"), cleared.unlockedContent());
+    }
+
+    private void assertBoundary(
+            MajorRealm currentRealm,
+            RealmPhase currentPhase,
+            long targetExp,
+            String requirementId,
+            String expectedStageId
+    ) {
+        repository.seed(new PlayerProfile(
+                UUID_VALUE,
+                currentRealm,
+                currentPhase,
+                targetExp,
+                Set.of(),
+                Set.of("QI_BAR"),
+                NOW,
+                NOW
+        ));
+
+        PromotionResult blocked = progressionService.promote(UUID_VALUE).join();
+        progressionService.grantRequirement(UUID_VALUE, requirementId).join();
+        PromotionResult promoted = progressionService.promote(UUID_VALUE).join();
+
+        assertEquals(Set.of(requirementId), blocked.missingRequirements());
+        assertEquals(PromotionResult.Status.SUCCESS, promoted.status());
+        assertEquals(expectedStageId, promoted.nextStage().orElseThrow().stageId());
     }
 
     private static final class FakeRepository implements PlayerRepository {

@@ -14,7 +14,8 @@ public record PlayerProfile(
         Set<String> completedRequirements,
         Set<String> unlockedContent,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        CharacterData characterData
 ) {
     public static final String DEFAULT_UNLOCKED_CONTENT = "QI_BAR";
     private static final Pattern STABLE_ID = Pattern.compile("[A-Za-z][A-Za-z0-9_.:-]*");
@@ -27,6 +28,7 @@ public record PlayerProfile(
         Objects.requireNonNull(unlockedContent, "unlockedContent");
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(updatedAt, "updatedAt");
+        Objects.requireNonNull(characterData, "characterData");
 
         if (!majorRealm.supports(phase)) {
             throw new IllegalArgumentException(
@@ -44,6 +46,14 @@ public record PlayerProfile(
         unlockedContent = immutableIds(unlockedContent, "unlockedContent");
     }
 
+    /** Compatibility constructor for callers that only manage progression data. */
+    public PlayerProfile(UUID uuid, MajorRealm majorRealm, RealmPhase phase, long cultivationExp,
+                         Set<String> completedRequirements, Set<String> unlockedContent,
+                         Instant createdAt, Instant updatedAt) {
+        this(uuid, majorRealm, phase, cultivationExp, completedRequirements, unlockedContent, createdAt, updatedAt,
+                CharacterData.uncreated());
+    }
+
     public static PlayerProfile createDefault(UUID uuid, Instant now) {
         return new PlayerProfile(
                 uuid,
@@ -53,7 +63,8 @@ public record PlayerProfile(
                 Set.of(),
                 Set.of(DEFAULT_UNLOCKED_CONTENT),
                 now,
-                now
+                now,
+                CharacterData.uncreated()
         );
     }
 
@@ -66,7 +77,8 @@ public record PlayerProfile(
                 completedRequirements,
                 unlockedContent,
                 createdAt,
-                now
+                now,
+                characterData
         );
     }
 
@@ -86,7 +98,8 @@ public record PlayerProfile(
                 newCompletedRequirements,
                 newUnlockedContent,
                 createdAt,
-                now
+                now,
+                characterData
         );
     }
 
@@ -99,7 +112,8 @@ public record PlayerProfile(
                 Set.of(),
                 Set.of(DEFAULT_UNLOCKED_CONTENT),
                 createdAt,
-                now
+                now,
+                characterData
         );
     }
 
@@ -112,8 +126,14 @@ public record PlayerProfile(
                 completedRequirements,
                 unlockedContent,
                 createdAt,
-                now
+                now,
+                characterData
         );
+    }
+
+    public PlayerProfile withCharacterData(CharacterData newCharacterData, Instant now) {
+        return new PlayerProfile(uuid, majorRealm, phase, cultivationExp, completedRequirements, unlockedContent,
+                createdAt, now, newCharacterData);
     }
 
     public String realmDisplayName() {
