@@ -1,8 +1,11 @@
 package com.murimrpg.ui;
 
 import com.murimrpg.domain.CharacterData;
+import com.murimrpg.domain.OrganizationDefinition;
 import com.murimrpg.domain.PlayerProfile;
+import com.murimrpg.domain.PlayerJourney;
 import java.util.List;
+import java.util.Optional;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -25,16 +28,21 @@ public final class GanghoProfileGui implements Listener {
     private static final Component TITLE = Component.text("江湖錄 · 인물정보", NamedTextColor.DARK_PURPLE);
     private static final int CLOSE_SLOT = 22;
 
-    public void open(Player player, PlayerProfile profile) {
+    public void open(Player player, PlayerProfile profile, PlayerJourney journey,
+            Optional<OrganizationDefinition> organization) {
         CharacterData data = profile.characterData();
         Holder holder = new Holder();
         Inventory inventory = Bukkit.createInventory(holder, 27, TITLE);
         holder.bind(inventory);
-        inventory.setItem(4, playerHead(player, profile));
+        inventory.setItem(4, playerHead(player, profile, organization));
         inventory.setItem(10, item(Material.IRON_INGOT, "힘", NamedTextColor.RED,
                 List.of("기초 힘: " + data.baseStrength())));
         inventory.setItem(11, item(Material.SUGAR, "신법", NamedTextColor.GREEN,
                 List.of("기초 신법: " + data.baseSpeed())));
+        inventory.setItem(12, item(Material.IRON_SWORD, "門派 · 문파", NamedTextColor.GOLD,
+                List.of("소속: " + organization.map(OrganizationDefinition::displayName).orElse("없음"),
+                        "계급: " + journey.content().organizationRankId().orElse("없음"),
+                        "기여도: " + journey.content().organizationContribution())));
         inventory.setItem(13, item(Material.AMETHYST_SHARD, "境界 · 경지", NamedTextColor.AQUA,
                 List.of(profile.realmDisplayName(), "수련 EXP: " + profile.cultivationExp())));
         inventory.setItem(15, item(Material.EXPERIENCE_BOTTLE, "재능", NamedTextColor.LIGHT_PURPLE,
@@ -60,10 +68,12 @@ public final class GanghoProfileGui implements Listener {
         }
     }
 
-    private ItemStack playerHead(Player player, PlayerProfile profile) {
+    private ItemStack playerHead(Player player, PlayerProfile profile, Optional<OrganizationDefinition> organization) {
         CharacterData data = profile.characterData();
         ItemStack item = item(Material.PLAYER_HEAD, player.getName(), NamedTextColor.GOLD,
-                List.of("가문: " + data.family().displayName(), "경지: " + profile.realmDisplayName()));
+                List.of("가문: " + data.family().displayName(), "문파: "
+                        + organization.map(OrganizationDefinition::displayName).orElse("없음"),
+                        "경지: " + profile.realmDisplayName()));
         if (item.getItemMeta() instanceof SkullMeta meta) {
             meta.setOwningPlayer(player);
             item.setItemMeta(meta);

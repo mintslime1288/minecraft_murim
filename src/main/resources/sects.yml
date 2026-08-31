@@ -1,0 +1,34 @@
+# Directly joinable organizations. Alliances are never stored as direct membership.
+organizations:
+  - {id: NAMGUNG_FAMILY, display-name: 남궁세가, alliance-id: MURIM_ALLIANCE, category-id: FIVE_GREAT_FAMILIES, type: FAMILY, rank-system-id: FAMILY_RANKS}
+  - {id: HEBEI_PENG_FAMILY, display-name: 하북팽가, alliance-id: MURIM_ALLIANCE, category-id: FIVE_GREAT_FAMILIES, type: FAMILY, rank-system-id: FAMILY_RANKS}
+  - {id: ZHUGE_FAMILY, display-name: 제갈세가, alliance-id: MURIM_ALLIANCE, category-id: FIVE_GREAT_FAMILIES, type: FAMILY, rank-system-id: FAMILY_RANKS}
+  - {id: MURONG_FAMILY, display-name: 모용세가, alliance-id: MURIM_ALLIANCE, category-id: FIVE_GREAT_FAMILIES, type: FAMILY, rank-system-id: FAMILY_RANKS}
+  - {id: SICHUAN_TANG_FAMILY, display-name: 사천당가, alliance-id: MURIM_ALLIANCE, category-id: FIVE_GREAT_FAMILIES, type: FAMILY, rank-system-id: FAMILY_RANKS}
+
+  - id: HUASHAN_SECT
+    display-name: 화산파
+    hanja-name: 華山派
+    alliance-id: MURIM_ALLIANCE
+    category-id: NINE_SECTS_ONE_GANG
+    type: SECT
+    rank-system-id: SECT_RANKS
+    leader-title: 장문인
+    description:
+      - 매화와 검을 숭상하는 정파 문파입니다.
+    specialties:
+      - 검법
+      - 내공심법
+      - 경공
+  - {id: ZHONGNAN_SECT, display-name: 종남파, alliance-id: MURIM_ALLIANCE, category-id: NINE_SECTS_ONE_GANG, type: SECT, rank-system-id: SECT_RANKS, leader-title: 장문인}
+  - {id: WUDANG_SECT, display-name: 무당파, alliance-id: MURIM_ALLIANCE, category-id: NINE_SECTS_ONE_GANG, type: SECT, rank-system-id: SECT_RANKS, leader-title: 장문인}
+  - {id: SHAOLIN_TEMPLE, display-name: 소림사, alliance-id: MURIM_ALLIANCE, category-id: NINE_SECTS_ONE_GANG, type: SECT, rank-system-id: SECT_RANKS, leader-title: 장문인}
+  - {id: BEGGARS_GANG, display-name: 개방, alliance-id: MURIM_ALLIANCE, category-id: NINE_SECTS_ONE_GANG, type: SECT, rank-system-id: SECT_RANKS, leader-title: 문주}
+
+  - {id: GREEN_FOREST, display-name: 녹림, alliance-id: SADO_ALLIANCE, category-id: BLACK_PATH, type: BLACK_PATH_GROUP}
+  - {id: YANGTZE_RIVER_STRONGHOLDS, display-name: 장강수로채, alliance-id: SADO_ALLIANCE, category-id: BLACK_PATH, type: BLACK_PATH_GROUP}
+  - {id: ASSASSIN_HALL, display-name: 살막, alliance-id: SADO_ALLIANCE, category-id: BLACK_PATH, type: BLACK_PATH_GROUP}
+  - {id: HAO_GATE, display-name: 하오문, alliance-id: SADO_ALLIANCE, category-id: BLACK_PATH, type: BLACK_PATH_GROUP}
+
+  - {id: DEMON_CULT, display-name: 마교, alliance-id: SADO_ALLIANCE, category-id: HERETICAL_CULT, type: CULT, rank-system-id: DEMON_CULT_RANKS}
+  - {id: BLOOD_CULT, display-name: 혈교, alliance-id: SADO_ALLIANCE, category-id: HERETICAL_CULT, type: CULT}

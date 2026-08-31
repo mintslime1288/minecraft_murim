@@ -2,6 +2,10 @@ package com.murimrpg.ui;
 
 import com.murimrpg.domain.CharacterData;
 import com.murimrpg.domain.PlayerProfile;
+import com.murimrpg.domain.PlayerJourney;
+import com.murimrpg.domain.CultivationProgression;
+import com.murimrpg.domain.ContentCatalog;
+import com.murimrpg.service.PlayerContentService;
 import com.murimrpg.service.PlayerProfileService;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,10 +18,17 @@ import org.bukkit.entity.Player;
 /** Cache-only persistent HUD. It intentionally does not invent unimplemented qi or combat values. */
 final class GanghoHud {
     private final PlayerProfileService profiles;
+    private final PlayerContentService content;
+    private final CultivationProgression progression;
+    private final ContentCatalog catalog;
     private final Map<UUID, RenderedHud> rendered = new HashMap<>();
 
-    GanghoHud(PlayerProfileService profiles) {
+    GanghoHud(PlayerProfileService profiles, PlayerContentService content, CultivationProgression progression,
+            ContentCatalog catalog) {
         this.profiles = profiles;
+        this.content = content;
+        this.progression = progression;
+        this.catalog = catalog;
     }
 
     void tick(Player player) {
@@ -26,21 +37,22 @@ final class GanghoHud {
         PlayerProfile profile = optional.orElseThrow();
         CharacterData character = profile.characterData();
         if (!character.completed()) return;
-        String value = profile.realmDisplayName() + "|" + character.family().id() + "|"
-                + character.baseStrength() + "|" + character.baseSpeed();
+        PlayerJourney journey = content.cached(player.getUniqueId()).orElse(null);
+        String skill = journey == null ? "무공 없음" : journey.journey().activeSkillId()
+                .flatMap(catalog::findSkill).map(value -> "심법 " + value.displayName()).orElse("무공 없음");
+        long qi = journey == null ? 0 : journey.journey().currentQi();
+        long maxQi = progression.stage(profile).maxQi();
+        String value = profile.realmDisplayName() + "|" + skill + "|" + qi + "|" + maxQi;
         RenderedHud previous = rendered.get(player.getUniqueId());
         Component component;
         if (previous != null && previous.value().equals(value)) {
             component = previous.component();
         } else {
-            component = Component.text("境界 ", NamedTextColor.DARK_AQUA)
-                    .append(Component.text(profile.realmDisplayName(), NamedTextColor.AQUA))
-                    .append(Component.text(" | 家門 ", NamedTextColor.DARK_GRAY))
-                    .append(Component.text(character.family().displayName(), NamedTextColor.GOLD))
-                    .append(Component.text(" | 힘 ", NamedTextColor.DARK_GRAY))
-                    .append(Component.text(character.baseStrength(), NamedTextColor.RED))
-                    .append(Component.text(" | 신법 ", NamedTextColor.DARK_GRAY))
-                    .append(Component.text(character.baseSpeed(), NamedTextColor.GREEN));
+            component = Component.text("☯ 내공 ", NamedTextColor.DARK_AQUA)
+                    .append(Component.text(qi + "/" + maxQi, NamedTextColor.AQUA))
+                    .append(Component.text(" | ⚔ ", NamedTextColor.DARK_GRAY))
+                    .append(Component.text(skill, NamedTextColor.GOLD))
+                    .append(Component.text(" | 준비", NamedTextColor.GREEN));
             rendered.put(player.getUniqueId(), new RenderedHud(value, component));
         }
         player.sendActionBar(component);

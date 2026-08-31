@@ -1,3 +1,32 @@
-# Balance values for movement and sect skills belong here, not in Java code.
-# Skills listed in GAME_DESIGN.md are intentionally not implemented yet.
-skills: {}
+# 실제 효과가 구현된 화산파 내공심법만 등록한다.
+skills:
+  - id: LIUHE_ART
+    display-name: 육합공
+    type: INTERNAL_ART
+    organization-id: HUASHAN_SECT
+    required-stage-id: third_rate_initiate
+    qi-cost: 0
+    cooldown-ticks: 0
+    power: 0
+    grade: 기초
+    description:
+      - 화산파의 기본 내공심법.
+      - 초보자가 가장 먼저 배우는 심법입니다.
+    unlock-conditions:
+      - 화산파 입문 수련 완료
+
+  - id: PURPLE_MIST_DIVINE_ART
+    display-name: 자하신공
+    type: INTERNAL_ART
+    organization-id: HUASHAN_SECT
+    required-stage-id: third_rate_initiate
+    qi-cost: 0
+    cooldown-ticks: 0
+    power: 0
+    grade: 상승
+    description:
+      - 화산파의 상승 내공심법.
+      - 운기조식 시 자색 기운을 일으킵니다.
+    unlock-conditions:
+      - 화산파 소속
+      - 일대제자 승급 시험 합격

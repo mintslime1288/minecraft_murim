@@ -1,0 +1,59 @@
+huashan:
+  organization-id: HUASHAN_SECT
+  entrance-trial-id: HUASHAN_ENTRANCE_TRIAL
+  liuhe-quest-id: LIUHE_ART_QUEST
+  second-promotion-trial-id: SECOND_DISCIPLE_PROMOTION_TRIAL
+  first-promotion-trial-id: FIRST_DISCIPLE_PROMOTION_TRIAL
+  training-dummy-id: HUASHAN_TRAINING_DUMMY
+  training-dummy-display-name: 화산파 목검 수련 표적
+  examiner:
+    id: HUASHAN_FIRST_DISCIPLE_EXAMINER
+    display-name: 화산파 일대제자 시험관
+    max-health: 100.0
+  trial-spawn-delay-seconds: 3
+  meditation-preparation-seconds: 3
+  purple-mist-particle:
+    type: CHERRY_LEAVES
+    count: 8
+    interval-ticks: 20
+
+quests:
+  - id: HUASHAN_ENTRANCE_TRIAL
+    display-name: 화산파 입문 시험
+    organization-id: HUASHAN_SECT
+    resulting-rank-id: THIRD_GENERATION_DISCIPLE
+    next-quest-id: LIUHE_ART_QUEST
+    objective-type: TRAINING
+    target-id: HUASHAN_TRAINING_DUMMY
+    required-hits: 10
+    required-meditation-seconds: 10
+    meditation-mode: CONTINUOUS
+
+  - id: LIUHE_ART_QUEST
+    display-name: 육합공 수련
+    organization-id: HUASHAN_SECT
+    required-rank-id: THIRD_GENERATION_DISCIPLE
+    granted-skill-id: LIUHE_ART
+    objective-type: TRAINING
+    target-id: HUASHAN_TRAINING_DUMMY
+    required-hits: 20
+    required-meditation-seconds: 30
+    meditation-mode: CUMULATIVE
+
+  - id: SECOND_DISCIPLE_PROMOTION_TRIAL
+    display-name: 이대제자 승급 시험
+    organization-id: HUASHAN_SECT
+    required-rank-id: THIRD_GENERATION_DISCIPLE
+    resulting-rank-id: SECOND_GENERATION_DISCIPLE
+    objective-type: NPC_HEALTH_THRESHOLD
+    target-id: HUASHAN_FIRST_DISCIPLE_EXAMINER
+    threshold-percent: 50.0
+
+  - id: FIRST_DISCIPLE_PROMOTION_TRIAL
+    display-name: 일대제자 승급 시험
+    organization-id: HUASHAN_SECT
+    required-rank-id: SECOND_GENERATION_DISCIPLE
+    resulting-rank-id: FIRST_GENERATION_DISCIPLE
+    granted-skill-id: PURPLE_MIST_DIVINE_ART
+    objective-type: MONSTER_KILL
+    target-id: BANDIT_LEADER

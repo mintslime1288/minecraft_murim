@@ -79,6 +79,19 @@ class PlayerProfileServiceTest {
     }
 
     @Test
+    void resetAllAlsoClearsCharacterCreation() {
+        service.loadOrCreate(UUID_VALUE).join();
+        service.saveCharacter(UUID_VALUE, new com.murimrpg.domain.CharacterData(true, 2,
+                com.murimrpg.domain.Family.NAMGUNG, 14, 11, 1.5,
+                com.murimrpg.domain.Constitution.MUGOL, null)).join();
+
+        PlayerProfile reset = service.resetAll(UUID_VALUE).join();
+
+        assertEquals(PlayerProfile.createDefault(UUID_VALUE, NOW), reset);
+        assertFalse(reset.characterData().completed());
+    }
+
+    @Test
     void shutdownFlushesCachedProfilesBeforeExecutorStops() throws Exception {
         service.loadOrCreate(UUID_VALUE).join();
 

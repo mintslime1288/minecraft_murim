@@ -1,0 +1,27 @@
+rank-systems:
+  - id: SECT_RANKS
+    display-name: 문파형 계급
+    organization-type: SECT
+    ranks:
+      - {id: SECT_MASTER, display-name: 문주 또는 장문인, order: 1}
+      - {id: ELDER, display-name: 장로, order: 2}
+      - {id: FIRST_GENERATION_DISCIPLE, display-name: 일대제자, order: 3}
+      - {id: SECOND_GENERATION_DISCIPLE, display-name: 이대제자, order: 4}
+      - {id: THIRD_GENERATION_DISCIPLE, display-name: 삼대제자, order: 5}
+
+  - id: FAMILY_RANKS
+    display-name: 세가형 계급
+    organization-type: FAMILY
+    ranks:
+      - {id: FAMILY_HEAD, display-name: 가주, order: 1}
+      - {id: YOUNG_FAMILY_HEAD, display-name: 소가주, order: 2}
+      - {id: ELDER, display-name: 장로, order: 3}
+      - {id: RISING_JUNIOR, display-name: 후기지수, order: 4}
+
+  - id: DEMON_CULT_RANKS
+    display-name: 마교형 계급
+    organization-type: CULT
+    ranks:
+      - {id: HEAVENLY_DEMON, display-name: 천마 또는 교주, order: 1}
+      - {id: YOUNG_CULT_LEADER, display-name: 소교주, order: 2}
+      - {id: COUNCIL_OF_ELDERS, display-name: 장로회, order: 3}

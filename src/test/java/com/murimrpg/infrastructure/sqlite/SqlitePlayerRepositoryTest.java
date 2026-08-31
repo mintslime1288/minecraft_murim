@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.murimrpg.domain.MajorRealm;
 import com.murimrpg.domain.PlayerProfile;
+import com.murimrpg.domain.PlayerContentState;
+import com.murimrpg.domain.PlayerJourneyState;
 import com.murimrpg.domain.RealmPhase;
 import java.nio.file.Path;
 import java.sql.DriverManager;
@@ -62,6 +64,26 @@ class SqlitePlayerRepositoryTest {
         restartedRepository.initialize();
 
         assertEquals(saved, restartedRepository.findByUuid(UUID_VALUE).orElseThrow());
+    }
+
+    @Test
+    void contentRankSkillsAndPromotionActivitySurviveRestartWithoutChangingRealmProfile() {
+        SqlitePlayerRepository first = repository(); first.initialize();
+        PlayerProfile profile = PlayerProfile.createDefault(UUID_VALUE, CREATED_AT);
+        first.findOrCreate(profile);
+        first.saveContentState(new PlayerContentState(UUID_VALUE, java.util.Optional.of("HUASHAN_SECT"),
+                java.util.Optional.of("SECOND_GENERATION_DISCIPLE"), 0, Set.of("LIUHE_ART")));
+        first.saveJourneyState(new PlayerJourneyState(UUID_VALUE,
+                java.util.Optional.of("FIRST_DISCIPLE_PROMOTION_TRIAL"), 0, 0,
+                java.util.Optional.of("LIUHE_ART"), 30, Set.of("HUASHAN_ENTRANCE_TRIAL")));
+
+        SqlitePlayerRepository restarted = repository(); restarted.initialize();
+        assertEquals(profile, restarted.findByUuid(UUID_VALUE).orElseThrow());
+        assertEquals("SECOND_GENERATION_DISCIPLE", restarted.findContentState(UUID_VALUE).orElseThrow()
+                .organizationRankId().orElseThrow());
+        assertEquals(Set.of("LIUHE_ART"), restarted.findContentState(UUID_VALUE).orElseThrow().learnedSkillIds());
+        assertEquals("FIRST_DISCIPLE_PROMOTION_TRIAL", restarted.findJourneyState(UUID_VALUE).orElseThrow()
+                .activeActivityId().orElseThrow());
     }
 
     @Test

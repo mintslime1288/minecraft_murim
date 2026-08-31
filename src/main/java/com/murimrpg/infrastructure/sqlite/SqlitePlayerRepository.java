@@ -7,6 +7,8 @@ import com.murimrpg.domain.Constitution;
 import com.murimrpg.domain.Family;
 import com.murimrpg.domain.CharacterTrait;
 import com.murimrpg.domain.PlayerProfile;
+import com.murimrpg.domain.PlayerContentState;
+import com.murimrpg.domain.PlayerJourneyState;
 import com.murimrpg.domain.RealmPhase;
 import com.murimrpg.repository.PlayerRepository;
 import java.io.IOException;
@@ -20,6 +22,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -220,6 +224,92 @@ public final class SqlitePlayerRepository implements PlayerRepository {
             logger.log(Level.SEVERE, message, exception);
             throw new ProfileDataException(message, exception);
         }
+    }
+
+    @Override
+    public Optional<PlayerContentState> findContentState(UUID uuid) {
+        try (Connection connection = openConnection(); PreparedStatement statement = connection.prepareStatement("""
+                SELECT p.uuid, c.organization_id, c.organization_rank_id, COALESCE(c.sect_contribution, 0) AS sect_contribution
+                FROM player_profiles p LEFT JOIN player_content_states c ON c.uuid = p.uuid WHERE p.uuid = ?
+                """)) {
+            statement.setString(1, uuid.toString());
+            try (ResultSet result = statement.executeQuery()) {
+                if (!result.next()) return Optional.empty();
+                return Optional.of(new PlayerContentState(uuid,
+                        Optional.ofNullable(result.getString("organization_id")),
+                        Optional.ofNullable(result.getString("organization_rank_id")),
+                        result.getLong("sect_contribution"), learnedSkillIds(connection, uuid)));
+            }
+        } catch (SQLException | IllegalArgumentException exception) {
+            throw new IllegalStateException("Failed to load content state for " + uuid, exception);
+        }
+    }
+
+    @Override
+    public void saveContentState(PlayerContentState state) {
+        try (Connection connection = openConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        INSERT INTO player_content_states(uuid, organization_id, organization_rank_id, sect_contribution)
+                        VALUES (?, ?, ?, ?) ON CONFLICT(uuid) DO UPDATE SET organization_id=excluded.organization_id,
+                        organization_rank_id=excluded.organization_rank_id, sect_contribution=excluded.sect_contribution
+                        """)) {
+                    statement.setString(1, state.uuid().toString()); statement.setString(2, state.organizationId().orElse(null));
+                    statement.setString(3, state.organizationRankId().orElse(null)); statement.setLong(4, state.organizationContribution());
+                    statement.executeUpdate();
+                }
+                try (PreparedStatement statement = connection.prepareStatement("DELETE FROM player_learned_skills WHERE uuid=?")) {
+                    statement.setString(1, state.uuid().toString()); statement.executeUpdate();
+                }
+                try (PreparedStatement statement = connection.prepareStatement("INSERT INTO player_learned_skills(uuid, skill_id) VALUES (?, ?)")) {
+                    for (String id : state.learnedSkillIds()) { statement.setString(1, state.uuid().toString()); statement.setString(2, id); statement.addBatch(); }
+                    statement.executeBatch();
+                }
+                connection.commit();
+            } catch (SQLException | RuntimeException exception) { connection.rollback(); throw exception; }
+        } catch (SQLException exception) { throw new IllegalStateException("Failed to save content state for " + state.uuid(), exception); }
+    }
+
+    @Override
+    public Optional<PlayerJourneyState> findJourneyState(UUID uuid) {
+        try (Connection connection = openConnection(); PreparedStatement statement = connection.prepareStatement("""
+                SELECT active_activity_id, dummy_hits, meditation_seconds, active_skill_id, current_qi, completed_activities
+                FROM player_journey_states WHERE uuid=?
+                """)) {
+            statement.setString(1, uuid.toString());
+            try (ResultSet result = statement.executeQuery()) {
+                if (!result.next()) return Optional.empty();
+                return Optional.of(new PlayerJourneyState(uuid, Optional.ofNullable(result.getString("active_activity_id")),
+                        result.getInt("dummy_hits"), result.getInt("meditation_seconds"),
+                        Optional.ofNullable(result.getString("active_skill_id")), Math.max(0, result.getLong("current_qi")),
+                        ProfileSetCodec.decode(result.getString("completed_activities"))));
+            }
+        } catch (SQLException | IllegalArgumentException exception) { throw new IllegalStateException("Failed to load journey state for " + uuid, exception); }
+    }
+
+    @Override
+    public void saveJourneyState(PlayerJourneyState state) {
+        try (Connection connection = openConnection(); PreparedStatement statement = connection.prepareStatement("""
+                INSERT INTO player_journey_states(uuid, active_activity_id, dummy_hits, meditation_seconds, active_skill_id, current_qi, completed_activities)
+                VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(uuid) DO UPDATE SET active_activity_id=excluded.active_activity_id,
+                dummy_hits=excluded.dummy_hits, meditation_seconds=excluded.meditation_seconds, active_skill_id=excluded.active_skill_id,
+                current_qi=excluded.current_qi, completed_activities=excluded.completed_activities
+                """)) {
+            statement.setString(1, state.uuid().toString()); statement.setString(2, state.activeActivityId().orElse(null));
+            statement.setInt(3, state.dummyHits()); statement.setInt(4, state.meditationSeconds());
+            statement.setString(5, state.activeSkillId().orElse(null)); statement.setLong(6, state.currentQi());
+            statement.setString(7, ProfileSetCodec.encode(state.completedActivityIds())); statement.executeUpdate();
+        } catch (SQLException exception) { throw new IllegalStateException("Failed to save journey state for " + state.uuid(), exception); }
+    }
+
+    private Set<String> learnedSkillIds(Connection connection, UUID uuid) throws SQLException {
+        Set<String> result = new LinkedHashSet<>();
+        try (PreparedStatement statement = connection.prepareStatement("SELECT skill_id FROM player_learned_skills WHERE uuid=? ORDER BY skill_id")) {
+            statement.setString(1, uuid.toString());
+            try (ResultSet rows = statement.executeQuery()) { while (rows.next()) result.add(rows.getString(1)); }
+        }
+        return Set.copyOf(result);
     }
 
     @Override public int countProfiles() { return count("SELECT COUNT(*) FROM player_profiles"); }

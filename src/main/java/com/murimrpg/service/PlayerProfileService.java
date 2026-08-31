@@ -91,6 +91,14 @@ public final class PlayerProfileService {
         });
     }
 
+    /** Resets every persisted character field to the state before first character creation. */
+    public CompletableFuture<PlayerProfile> resetAll(UUID uuid) {
+        return mutate(uuid, (current, now) -> {
+            PlayerProfile reset = PlayerProfile.createDefault(uuid, now);
+            return ProfileMutation.saved(reset, reset);
+        });
+    }
+
     public CompletableFuture<PlayerProfile> saveCharacter(UUID uuid, CharacterData data) {
         return mutate(uuid, (current, now) -> {
             PlayerProfile updated = current.withCharacterData(data, now);

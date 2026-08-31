@@ -47,7 +47,7 @@ Paper entry point -> command/listener -> service -> domain
 
 ## SQLite 스키마
 
-DB 파일은 `plugins/MurimRPG/murimrpg.db`이며 현재 스키마 버전은 1이다.
+DB 파일은 `plugins/MurimRPG/murimrpg.db`이며 현재 스키마 버전은 6이다. v2는 조직·기술, v3는 직접 소속 조직·계급, v4는 활동·내공·완료 활동, v5~v6은 캐릭터 생성 데이터를 추가한다.
 
 ```text
 schema_version
@@ -69,7 +69,7 @@ player_profiles
 
 ## 현재 구현 범위
 
-플러그인 생명주기, 프로필 자동 생성·저장, 삼류부터 생사경까지 32단계 경지 조회·승급, 개인 승급 피드백, 관리자 테스트용 EXP·조건·진행도·저장 진단을 포함한다. 실제 돌파 시험, 퀘스트, 보스, 무공, 경공, 내공 소비·회복, 몬스터, 장비는 포함하지 않는다.
+플러그인 생명주기, 프로필 자동 생성·저장, 32단계 경지, 세력·조직·계급 설정, 화산파 입문·육합공·운기조식·두 승급 시험을 포함한다. Listener는 Paper 이벤트를 입력으로 변환하고 합격·계급 규칙은 `HuashanService`가 처리한다. 시험 엔티티는 PDC의 콘텐츠 ID와 소유자 UUID로 구분한다.
 
 ## 경지 설정
 
@@ -88,4 +88,8 @@ player_profiles
 
 설정 로더의 일반 `load`는 향후 확장을 위해 임의 개수의 유효한 단계를 지원한다. 플러그인 시작 경로는 현재 배포 기본값이 정확히 32단계인지 추가 검증하며 기본 `realms.yml` 회귀 테스트도 이를 보장한다. 최고 단계 표시, 테스트 준비 EXP와 조건, 관리자 EXP 자동완성은 모두 로드된 `CultivationProgression`에서 계산한다.
 
-이번 확장은 문자열로 저장되는 기존 `major_realm_id`와 `phase_id` 컬럼을 그대로 사용하므로 스키마 버전은 1이다. 기존 삼류·이류·일류 행은 변경 없이 읽힌다. 새 대경지 ID가 저장된 DB는 이전 JAR에서 해석되지 않을 수 있으므로 배포 전 `murimrpg.db`를 백업하고, 롤백 시 이전 JAR과 백업 DB를 함께 복원한다.
+이번 확장은 기존 v6 컬럼을 그대로 사용하므로 스키마 버전을 올리지 않는다. 기존 경지와 캐릭터 행은 변경 없이 읽힌다.
+
+## UI 경계
+
+`ui` 패키지는 Bukkit 인벤토리·ActionBar·Scoreboard를 표현만 한다. `GanghoMenuGui`는 서비스가 제공하거나 이미 메모리에 적재된 `PlayerProfile`·`PlayerJourney` 스냅샷을 렌더링하며 SQLite를 직접 호출하지 않는다. 돌파와 심법 장착은 각각 `ProgressionService`와 `HuashanService`에 위임한다. GUI Holder는 화면 종류만 보관하고, 클릭·드래그는 항상 취소하여 아이템 이동이나 shift-click 복제를 막는다. HUD/Sidebar의 10 tick 갱신은 UUID 기반 캐시만 읽고 로그아웃과 플러그인 종료 시 캐시·작업을 정리한다.

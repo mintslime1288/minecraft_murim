@@ -1,0 +1,22 @@
+# Monster templates only. Entity spawning and combat behavior are intentionally not implemented yet.
+monsters:
+  - id: BANDIT
+    display-name: 흑송산채 산적
+    max-health: 24.0
+    attack-damage: 4.0
+    cultivation-exp-reward: 12
+    skill-ids: []
+
+  - id: BANDIT_ARCHER
+    display-name: 흑송산채 궁수
+    max-health: 20.0
+    attack-damage: 5.0
+    cultivation-exp-reward: 15
+    skill-ids: []
+
+  - id: BANDIT_LEADER
+    display-name: 흑송산채 두목
+    max-health: 60.0
+    attack-damage: 8.0
+    cultivation-exp-reward: 50
+    skill-ids: []

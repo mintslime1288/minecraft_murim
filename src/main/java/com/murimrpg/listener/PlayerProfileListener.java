@@ -3,6 +3,7 @@ package com.murimrpg.listener;
 import com.murimrpg.presentation.StatusMessageFactory;
 import com.murimrpg.service.PlayerProfileService;
 import com.murimrpg.service.ProgressionService;
+import com.murimrpg.service.PlayerContentService;
 import com.murimrpg.ui.CharacterCreationGui;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -22,6 +23,7 @@ public final class PlayerProfileListener implements Listener {
     private final StatusMessageFactory messageFactory;
     private final Logger logger;
     private final CharacterCreationGui characterGui;
+    private final PlayerContentService contentService;
 
     public PlayerProfileListener(
             PlayerProfileService profileService,
@@ -29,7 +31,8 @@ public final class PlayerProfileListener implements Listener {
             Executor mainThreadExecutor,
             StatusMessageFactory messageFactory,
             Logger logger,
-            CharacterCreationGui characterGui
+            CharacterCreationGui characterGui,
+            PlayerContentService contentService
     ) {
         this.profileService = profileService;
         this.progressionService = progressionService;
@@ -37,12 +40,17 @@ public final class PlayerProfileListener implements Listener {
         this.messageFactory = messageFactory;
         this.logger = logger;
         this.characterGui = characterGui;
+        this.contentService = contentService;
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         profileService.beginSession(uuid);
+        contentService.loadOrCreate(uuid).exceptionally(error -> {
+            logger.log(Level.SEVERE, "Failed to load player content state for " + uuid, rootCause(error));
+            return null;
+        });
         profileService.loadOrCreate(uuid).whenCompleteAsync((profile, error) -> {
             if (error == null) {
                 Player player = Bukkit.getPlayer(uuid);
@@ -66,6 +74,9 @@ public final class PlayerProfileListener implements Listener {
             if (error != null) {
                 logger.log(Level.SEVERE, "Failed to save player profile on quit for " + uuid, rootCause(error));
             }
+        });
+        contentService.saveAndUnload(uuid).whenComplete((result, error) -> {
+            if (error != null) logger.log(Level.SEVERE, "Failed to save player content state on quit for " + uuid, rootCause(error));
         });
     }
 

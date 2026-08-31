@@ -9,8 +9,8 @@ commands:
     usage: /murim <status|profile|realm|cultivate|admin>
   gangho:
     description: 강호이문록 메인 메뉴입니다.
-    aliases: [강호, 강호이문록]
-    usage: /강호 [도움말|내정보|상태|설정|공지]
+    aliases: [강호, 강호이문록, ui, 메뉴]
+    usage: /강호 [메뉴|도움말|내정보|상태|설정|공지]
   gangho_profile: {description: 내 강호 정보를 표시합니다., aliases: [내정보]}
   gangho_sect: {description: 문파 메뉴입니다., aliases: [문파]}
   gangho_martial: {description: 무공 메뉴입니다., aliases: [무공]}

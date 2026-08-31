@@ -37,7 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class MurimCommand implements CommandExecutor, TabCompleter {
     private static final List<String> ROOT_COMMANDS = List.of(
-            "status", "profile", "realm", "cultivate", "admin"
+            "status", "profile", "realm", "cultivate", "sect", "quest", "skill", "qi", "admin"
     );
     private static final List<String> ADMIN_COMMANDS = List.of(
             "addexp", "setexp", "requirement", "stage", "testprogress",
@@ -55,6 +55,7 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
     private final Logger logger;
     private final CharacterCreationService characterCreationService;
     private final CharacterCreationGui characterGui;
+    private final HuashanCommandHandler huashanCommands;
 
     public MurimCommand(
             StatusService statusService,
@@ -65,7 +66,8 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             Executor mainThreadExecutor,
             Logger logger,
             CharacterCreationService characterCreationService,
-            CharacterCreationGui characterGui
+            CharacterCreationGui characterGui,
+            HuashanCommandHandler huashanCommands
     ) {
         this.statusService = statusService;
         this.profileService = profileService;
@@ -76,6 +78,7 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
         this.logger = logger;
         this.characterCreationService = characterCreationService;
         this.characterGui = characterGui;
+        this.huashanCommands = huashanCommands;
     }
 
     @Override
@@ -88,6 +91,7 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
         if ("gangho".equalsIgnoreCase(command.getName())) {
             return handleGangho(sender, args);
         }
+        if (huashanCommands.handle(sender, args)) return true;
         if (args.length == 1 && "status".equalsIgnoreCase(args[0])) {
             showStatus(sender);
             return true;
@@ -240,6 +244,10 @@ public final class MurimCommand implements CommandExecutor, TabCompleter {
             return;
         }
         String subcommand = args[1].toLowerCase(Locale.ROOT);
+        if (java.util.Set.of("sect", "quest", "skill", "qi", "huashan").contains(subcommand)) {
+            huashanCommands.handleAdmin(sender, args);
+            return;
+        }
         switch (subcommand) {
             case "addexp" -> addExp(sender, args);
             case "setexp" -> setExp(sender, args);

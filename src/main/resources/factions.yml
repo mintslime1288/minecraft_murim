@@ -1,0 +1,27 @@
+alignments:
+  - id: ORTHODOX
+    display-name: 정파
+  - id: UNORTHODOX
+    display-name: 사파
+
+alliances:
+  - id: MURIM_ALLIANCE
+    display-name: 무림맹
+    alignment-id: ORTHODOX
+  - id: SADO_ALLIANCE
+    display-name: 사도련
+    alignment-id: UNORTHODOX
+
+categories:
+  - id: FIVE_GREAT_FAMILIES
+    display-name: 오대세가
+    alliance-id: MURIM_ALLIANCE
+  - id: NINE_SECTS_ONE_GANG
+    display-name: 구파일방
+    alliance-id: MURIM_ALLIANCE
+  - id: BLACK_PATH
+    display-name: 흑도
+    alliance-id: SADO_ALLIANCE
+  - id: HERETICAL_CULT
+    display-name: 사교
+    alliance-id: SADO_ALLIANCE
