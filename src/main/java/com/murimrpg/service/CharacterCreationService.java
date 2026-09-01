@@ -4,7 +4,7 @@ import com.murimrpg.domain.*;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/** All randomisation and persistence happens here, never inside Bukkit listeners. */
+/** All randomisation and persistence happens here, never inside platform event adapters. */
 public final class CharacterCreationService {
     private final PlayerProfileService profiles; private final CharacterRollService rolls;
     public CharacterCreationService(PlayerProfileService profiles, CharacterRollService rolls) { this.profiles=profiles; this.rolls=rolls; }

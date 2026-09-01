@@ -9,17 +9,17 @@ public final class StatusService {
 
     private final String pluginName;
     private final String pluginVersion;
-    private final String paperApiVersion;
+    private final String platformVersion;
     private final AtomicReference<String> dataStoreStatus = new AtomicReference<>(NOT_CONFIGURED);
 
-    public StatusService(String pluginName, String pluginVersion, String paperApiVersion) {
+    public StatusService(String pluginName, String pluginVersion, String platformVersion) {
         this.pluginName = Objects.requireNonNull(pluginName, "pluginName");
         this.pluginVersion = Objects.requireNonNull(pluginVersion, "pluginVersion");
-        this.paperApiVersion = Objects.requireNonNull(paperApiVersion, "paperApiVersion");
+        this.platformVersion = Objects.requireNonNull(platformVersion, "platformVersion");
     }
 
     public PluginStatus status() {
-        return new PluginStatus(pluginName, pluginVersion, paperApiVersion, dataStoreStatus.get());
+        return new PluginStatus(pluginName, pluginVersion, platformVersion, dataStoreStatus.get());
     }
 
     public void setDataStoreStatus(String status) {

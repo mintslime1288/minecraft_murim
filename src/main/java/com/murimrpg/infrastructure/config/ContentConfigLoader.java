@@ -1,11 +1,8 @@
 package com.murimrpg.infrastructure.config;
 
 import com.murimrpg.domain.*;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 public final class ContentConfigLoader {
     public ContentCatalog load(Path factionsPath, Path organizationsPath, Path ranksPath,
@@ -29,7 +26,7 @@ public final class ContentConfigLoader {
     }
 
     private <T> List<T> parseList(Path path, String root, boolean allowEmpty, EntryParser<T> parser) {
-        YamlConfiguration yaml = loadYaml(path);
+        YamlDocument yaml = loadYaml(path);
         Object raw = yaml.get(root);
         if (!(raw instanceof List<?> entries)) {
             throw new IllegalArgumentException(path.getFileName() + "." + root + " must be a list");
@@ -52,15 +49,7 @@ public final class ContentConfigLoader {
         return List.copyOf(result);
     }
 
-    private YamlConfiguration loadYaml(Path path) {
-        YamlConfiguration yaml = new YamlConfiguration();
-        try {
-            yaml.load(path.toFile());
-            return yaml;
-        } catch (IOException | InvalidConfigurationException exception) {
-            throw new IllegalArgumentException("Failed to load " + path.getFileName() + ": " + exception.getMessage(), exception);
-        }
-    }
+    private YamlDocument loadYaml(Path path) { return YamlDocument.load(path); }
 
     private FactionAlignmentDefinition parseAlignment(Map<?, ?> v, String c) {
         return new FactionAlignmentDefinition(FactionAlignment.fromId(string(v, "id", c)), string(v, "display-name", c));
@@ -130,7 +119,7 @@ public final class ContentConfigLoader {
     }
 
     private HuashanSettings parseHuashanSettings(Path path) {
-        YamlConfiguration yaml = loadYaml(path);
+        YamlDocument yaml = loadYaml(path);
         String root = "quests.yml.huashan";
         int trialSpawnDelay = yaml.contains("huashan.trial-spawn-delay-seconds")
                 ? requiredPathInt(yaml, "huashan.trial-spawn-delay-seconds", root + ".trial-spawn-delay-seconds")
@@ -166,19 +155,19 @@ public final class ContentConfigLoader {
         );
     }
 
-    private String requiredPathString(YamlConfiguration yaml, String path, String context) {
-        String value = yaml.getString(path);
+    private String requiredPathString(YamlDocument yaml, String path, String context) {
+        String value = yaml.string(path);
         if (value == null || value.isBlank()) throw new IllegalArgumentException(context + " is missing or invalid");
         return value;
     }
 
-    private int requiredPathInt(YamlConfiguration yaml, String path, String context) {
+    private int requiredPathInt(YamlDocument yaml, String path, String context) {
         Object value = yaml.get(path);
         if (!(value instanceof Number number)) throw new IllegalArgumentException(context + " must be numeric");
         return number.intValue();
     }
 
-    private double requiredPathDouble(YamlConfiguration yaml, String path, String context) {
+    private double requiredPathDouble(YamlDocument yaml, String path, String context) {
         Object value = yaml.get(path);
         if (!(value instanceof Number number)) throw new IllegalArgumentException(context + " must be numeric");
         return number.doubleValue();

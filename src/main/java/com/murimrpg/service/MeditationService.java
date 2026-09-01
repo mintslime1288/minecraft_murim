@@ -4,7 +4,7 @@ import com.murimrpg.domain.PlayerJourney;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/** Paper-independent boundary for preparation eligibility, qi recovery and cancellation. */
+/** Platform-independent boundary for preparation eligibility, qi recovery and cancellation. */
 public final class MeditationService {
     private final HuashanService huashan;
 

@@ -9,21 +9,21 @@ import org.junit.jupiter.api.Test;
 class StatusServiceTest {
     @Test
     void reportsConfiguredMetadataAndInitialDataStoreState() {
-        StatusService service = new StatusService("MurimRPG", "0.1.0", "26.2.build.112-stable");
+        StatusService service = new StatusService("MurimRPG", "0.1.0", "Fabric Loader 0.19.3");
 
         PluginStatus status = service.status();
 
         assertAll(
                 () -> assertEquals("MurimRPG", status.pluginName()),
                 () -> assertEquals("0.1.0", status.pluginVersion()),
-                () -> assertEquals("26.2.build.112-stable", status.paperApiVersion()),
+                () -> assertEquals("Fabric Loader 0.19.3", status.platformVersion()),
                 () -> assertEquals("not configured", status.dataStoreStatus())
         );
     }
 
     @Test
     void reportsDataStoreStateTransitionAfterInitialization() {
-        StatusService service = new StatusService("MurimRPG", "0.1.0", "26.2.build.112-stable");
+        StatusService service = new StatusService("MurimRPG", "0.1.0", "Fabric Loader 0.19.3");
 
         service.setDataStoreStatus("configured (SQLite)");
 

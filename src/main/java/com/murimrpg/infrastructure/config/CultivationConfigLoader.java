@@ -5,7 +5,6 @@ import com.murimrpg.domain.CultivationStageDefinition;
 import com.murimrpg.domain.MajorRealm;
 import com.murimrpg.domain.PromotionRequirement;
 import com.murimrpg.domain.RealmPhase;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -13,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 public final class CultivationConfigLoader {
     public CultivationProgression load(Path path, int expectedStageCount) {
@@ -29,14 +26,8 @@ public final class CultivationConfigLoader {
     }
 
     public CultivationProgression load(Path path) {
-        YamlConfiguration configuration = new YamlConfiguration();
-        try {
-            configuration.load(path.toFile());
-        } catch (IOException | InvalidConfigurationException exception) {
-            throw new IllegalArgumentException("Failed to load cultivation config: " + path, exception);
-        }
-
-        List<Map<?, ?>> entries = configuration.getMapList("realms");
+        YamlDocument configuration = YamlDocument.load(path);
+        List<Map<?, ?>> entries = configuration.mapList("realms");
         if (entries.isEmpty()) {
             throw new IllegalArgumentException("realms.yml must define a non-empty realms list");
         }

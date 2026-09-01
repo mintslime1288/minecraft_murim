@@ -1,90 +1,80 @@
 package com.murimrpg.ui;
 
-import com.murimrpg.domain.ContentCatalog;
-import com.murimrpg.domain.PlayerJourney;
-import com.murimrpg.domain.QuestDefinition;
 import com.murimrpg.service.PlayerContentService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.numbers.BlankFormat;
+import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
+import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
+import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
-/** Shows cached active-quest progress and restores the player's previous scoreboard when it ends. */
-public final class QuestSidebar {
-    private static final String OBJECTIVE_NAME = "murim_quest";
+/** Per-player sidebar packets avoid replacing the server's shared scoreboard. */
+final class QuestSidebar {
     private final PlayerContentService content;
-    private final ContentCatalog catalog;
+    private final UiViewService views;
     private final Map<UUID, Session> sessions = new HashMap<>();
+    QuestSidebar(PlayerContentService content, UiViewService views) { this.content = content; this.views = views; }
 
-    public QuestSidebar(PlayerContentService content, ContentCatalog catalog) {
-        this.content = content;
-        this.catalog = catalog;
-    }
-
-    public void tick(Player player) {
-        Optional<View> view = content.cached(player.getUniqueId()).flatMap(this::view);
-        Session session = sessions.get(player.getUniqueId());
-        if (view.isEmpty()) {
-            if (session != null) restore(player, session);
-            return;
+    void tick(ServerPlayer player) {
+        Optional<QuestSidebarView> next = content.cached(player.getUUID()).flatMap(views::activeQuest);
+        Session current = sessions.get(player.getUUID());
+        if (next.isEmpty()) { if (current != null) clear(player); return; }
+        QuestSidebarView view = next.orElseThrow();
+        String fingerprint = view.title() + '\n' + String.join("\n", view.lines());
+        if (current == null || !current.title.equals(view.title())) {
+            if (current != null) clear(player);
+            current = create(player, view.title());
         }
-        if (session != null && player.getScoreboard() != session.scoreboard()) {
-            session.objective().unregister();
-            sessions.remove(player.getUniqueId());
-            session = null;
+        if (fingerprint.equals(current.fingerprint)) return;
+        for (String owner : current.owners) player.connection.send(new ClientboundResetScorePacket(owner, current.objective.getName()));
+        current.owners = render(player, current.objective, view.lines());
+        current.fingerprint = fingerprint;
+    }
+
+    void clear(ServerPlayer player) {
+        Session session = sessions.remove(player.getUUID());
+        if (session == null) return;
+        player.connection.send(new ClientboundSetDisplayObjectivePacket(DisplaySlot.SIDEBAR, null));
+        player.connection.send(new ClientboundSetObjectivePacket(session.objective, ClientboundSetObjectivePacket.METHOD_REMOVE));
+    }
+
+    private Session create(ServerPlayer player, String title) {
+        Scoreboard board = new Scoreboard();
+        String name = "murim_" + player.getUUID().toString().substring(0, 8);
+        Objective objective = board.addObjective(name, ObjectiveCriteria.DUMMY, Component.literal(title),
+                ObjectiveCriteria.RenderType.INTEGER, false, BlankFormat.INSTANCE);
+        player.connection.send(new ClientboundSetObjectivePacket(objective, ClientboundSetObjectivePacket.METHOD_ADD));
+        player.connection.send(new ClientboundSetDisplayObjectivePacket(DisplaySlot.SIDEBAR, objective));
+        Session session = new Session(title, objective);
+        sessions.put(player.getUUID(), session);
+        return session;
+    }
+
+    private List<String> render(ServerPlayer player, Objective objective, List<String> lines) {
+        java.util.ArrayList<String> owners = new java.util.ArrayList<>();
+        int score = lines.size();
+        for (int index = 0; index < lines.size(); index++) {
+            String owner = "#murim_" + index;
+            owners.add(owner);
+            player.connection.send(new ClientboundSetScorePacket(owner, objective.getName(), score--,
+                    Optional.of(Component.literal(lines.get(index))), Optional.of(BlankFormat.INSTANCE)));
         }
-        if (session == null) {
-            Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-            Objective objective = scoreboard.registerNewObjective(OBJECTIVE_NAME, "dummy", view.orElseThrow().title());
-            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-            session = new Session(player.getScoreboard(), scoreboard, objective, "");
-            sessions.put(player.getUniqueId(), session);
-            player.setScoreboard(scoreboard);
-        }
-        View value = view.orElseThrow();
-        String fingerprint = value.title() + String.join("\n", value.lines());
-        if (fingerprint.equals(session.fingerprint())) return;
-        for (String entry : session.scoreboard().getEntries()) session.scoreboard().resetScores(entry);
-        session.objective().setDisplayName(value.title());
-        int score = value.lines().size();
-        for (int index = 0; index < value.lines().size(); index++) {
-            session.objective().getScore(value.lines().get(index) + "§" + Integer.toHexString(index)).setScore(score--);
-        }
-        sessions.put(player.getUniqueId(), new Session(session.previous(), session.scoreboard(), session.objective(), fingerprint));
+        return owners;
     }
 
-    public void clear(Player player) {
-        Optional.ofNullable(sessions.get(player.getUniqueId())).ifPresent(value -> restore(player, value));
+    private static final class Session {
+        private final String title; private final Objective objective;
+        private String fingerprint = ""; private List<String> owners = List.of();
+        private Session(String title, Objective objective) { this.title = title; this.objective = objective; }
     }
-
-    public void clearAll() {
-        List.copyOf(Bukkit.getOnlinePlayers()).forEach(this::clear);
-    }
-
-    private Optional<View> view(PlayerJourney state) {
-        return state.journey().activeActivityId().flatMap(catalog.quests()::find).map(quest -> new View(
-                "§5진행 중 퀘스트", lines(quest, state)));
-    }
-
-    private List<String> lines(QuestDefinition quest, PlayerJourney state) {
-        int hits = Math.min(state.journey().dummyHits(), quest.requiredHits());
-        int meditation = Math.min(state.journey().meditationSeconds(), quest.requiredMeditationSeconds());
-        return List.of("§f" + quest.displayName(), "§e타격: §f" + hits + "§7/§f" + quest.requiredHits(),
-                "§e운기: §f" + meditation + "§7/§f" + quest.requiredMeditationSeconds() + "초");
-    }
-
-    private void restore(Player player, Session session) {
-        sessions.remove(player.getUniqueId(), session);
-        if (player.getScoreboard() == session.scoreboard()) player.setScoreboard(session.previous());
-        session.objective().unregister();
-    }
-
-    private record View(String title, List<String> lines) { }
-    private record Session(Scoreboard previous, Scoreboard scoreboard, Objective objective, String fingerprint) { }
 }

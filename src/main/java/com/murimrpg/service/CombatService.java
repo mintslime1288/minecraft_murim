@@ -4,7 +4,7 @@ import com.murimrpg.domain.SkillDefinition;
 import com.murimrpg.domain.SkillType;
 import java.util.Objects;
 
-/** Exposes combat configuration without applying damage or touching Bukkit entities. */
+/** Exposes combat configuration without applying damage or touching platform entities. */
 public final class CombatService {
     private final SkillService skillService;
 

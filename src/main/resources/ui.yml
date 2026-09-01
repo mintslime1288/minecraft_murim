@@ -1,0 +1,4 @@
+# Server-only Vanilla UI pacing. The HUD and sidebar read memory caches only.
+hud:
+  refresh-ticks: 10
+  transient-message-ticks: 40

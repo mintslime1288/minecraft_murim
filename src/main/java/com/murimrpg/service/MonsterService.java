@@ -5,7 +5,7 @@ import com.murimrpg.domain.MonsterDefinition;
 import java.util.List;
 import java.util.Objects;
 
-/** Exposes monster templates without spawning or mutating Bukkit entities. */
+/** Exposes monster templates without spawning or mutating platform entities. */
 public final class MonsterService {
     private final ContentCatalog catalog;
 

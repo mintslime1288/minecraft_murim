@@ -1,39 +1,32 @@
 plugins {
     java
+    id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
 }
 
 group = "com.murimrpg"
-version = "0.1.0"
+version = "0.2.0"
 
-val paperApiVersion = "26.2.build.112-stable"
+base { archivesName = "MurimRPG-Fabric" }
 
-repositories {
-    mavenCentral()
-    maven {
-        name = "papermc"
-        url = uri("https://repo.papermc.io/repository/maven-public/")
-    }
-}
+repositories { mavenCentral() }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
-
-    implementation("org.xerial:sqlite-jdbc:3.53.2.1") {
-        exclude(group = "org.slf4j", module = "slf4j-api")
-    }
-
+    minecraft("com.mojang:minecraft:26.2")
+    implementation("net.fabricmc:fabric-loader:0.19.3")
+    implementation("net.fabricmc.fabric-api:fabric-api:0.158.0+26.2")
+    implementation("org.xerial:sqlite-jdbc:3.53.2.1") { exclude(group = "org.slf4j", module = "slf4j-api") }
+    include("org.xerial:sqlite-jdbc:3.53.2.1")
+    implementation("org.yaml:snakeyaml:2.5")
+    include("org.yaml:snakeyaml:2.5")
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.papermc.paper:paper-api:$paperApiVersion")
-    testImplementation("org.slf4j:slf4j-api:2.0.17")
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.17")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -42,26 +35,8 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.processResources {
-    val properties = mapOf(
-        "version" to project.version,
-        "paperApiVersion" to paperApiVersion
-    )
-    inputs.properties(properties)
-    filesMatching("plugin.yml") {
-        expand(properties)
-    }
+    inputs.property("version", project.version)
+    filesMatching("fabric.mod.json") { expand("version" to project.version) }
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
-tasks.jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from({
-        configurations.runtimeClasspath.get()
-            .filter { it.name.startsWith("sqlite-jdbc") }
-            .map { zipTree(it) }
-    })
-    exclude("META-INF/*.SF", "META-INF/*.RSA", "META-INF/*.DSA")
-}
+tasks.test { useJUnitPlatform() }
