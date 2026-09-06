@@ -12,11 +12,17 @@ import com.murimrpg.domain.PlayerJourney;
 import com.murimrpg.domain.PlayerProfile;
 import com.murimrpg.domain.PromotionResult;
 import com.murimrpg.domain.RealmProgressView;
+import com.murimrpg.domain.CurrencyType;
+import com.murimrpg.service.InventoryCurrencyService;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import net.minecraft.commands.arguments.EntityArgument;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerPlayer;
 
 /** Brigadier is only an input adapter; all rules stay in services. */
@@ -32,6 +38,12 @@ public final class CommandRegistry {
             dispatcher.register(literal("내정보").executes(this::openProfile));
             dispatcher.register(literal("경지").executes(this::realm));
             dispatcher.register(literal("문파").executes(this::openSect));
+            dispatcher.register(literal("화폐").executes(this::currency));
+            dispatcher.register(literal("money").executes(this::currency));
+            dispatcher.register(currencyAdmin());
+            dispatcher.register(trainingItemAdmin());
+            dispatcher.register(literal("메뉴").executes(this::menu));
+            dispatcher.register(literal("menu").executes(this::menu));
             dispatcher.register(literal("무공").executes(this::openMartialArts));
             dispatcher.register(literal("내공").executes(this::qi));
             dispatcher.register(literal("운기조식").executes(this::meditate));
@@ -39,6 +51,75 @@ public final class CommandRegistry {
                 dispatcher.register(literal(alias).executes(this::planned));
             }
         });
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> currencyAdmin() {
+        return literal("화폐관리").requires(this::isOperator)
+                .then(currencyTransferBranch("지급", true))
+                .then(currencyTransferBranch("회수", false))
+                .then(literal("확인").then(argument("대상", EntityArgument.player()).executes(this::currencyCheck)));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> trainingItemAdmin() {
+        return literal("아이템관리").requires(this::isOperator)
+                .then(literal("지급").then(argument("대상", EntityArgument.player())
+                        .then(trainingItemLiteral("목검", com.murimrpg.service.TrainingItemService.WOODEN_SWORD))
+                        .then(trainingItemLiteral("훈련허수아비", com.murimrpg.service.TrainingItemService.TRAINING_DUMMY))
+                        .then(literal("훈련").then(trainingItemLiteral("허수아비", com.murimrpg.service.TrainingItemService.TRAINING_DUMMY)))));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> trainingItemLiteral(String name, String id) {
+        return literal(name).then(argument("수량", IntegerArgumentType.integer(1)).executes(command -> {
+            ServerPlayer target = EntityArgument.getPlayer(command, "대상"); int count = IntegerArgumentType.getInteger(command, "수량");
+            if (!context.trainingItems().give(target, id, count)) {
+                command.getSource().sendFailure(Component.literal("[아이템관리] 대상 인벤토리에 빈 공간이 부족합니다.")); return 0;
+            }
+            send(command.getSource(), "[아이템관리] " + target.getName().getString() + "에게 " + name + " " + count + "개를 지급했습니다."); return 1;
+        }));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> currencyTransferBranch(String action, boolean give) {
+        var target = argument("대상", EntityArgument.player());
+        for (CurrencyType type : CurrencyType.values()) {
+            target.then(currencyLiteral(type, context.currencies().catalog().definition(type).displayName(), give));
+            target.then(currencyLiteral(type, type.name(), give));
+            for (String legacyId : type.legacyIds()) target.then(currencyLiteral(type, legacyId, give));
+        }
+        return literal(action).then(target);
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> currencyLiteral(CurrencyType type, String input, boolean give) {
+        return literal(input).then(argument("수량", IntegerArgumentType.integer(1))
+                .executes(command -> currencyTransfer(command, type, give)));
+    }
+
+    private int currency(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = command.getSource().getPlayerOrException();
+        return currencyMessage(command.getSource(), player);
+    }
+
+    private int currencyCheck(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        return currencyMessage(command.getSource(), EntityArgument.getPlayer(command, "대상"));
+    }
+
+    private int currencyMessage(CommandSourceStack source, ServerPlayer player) {
+        var balances = context.currencies().balances(player);
+        String summary = balances.entrySet().stream().map(entry -> context.currencies().catalog().definition(entry.getKey()).displayName() + " " + entry.getValue() + "개")
+                .reduce((left, right) -> left + " · " + right).orElse("없음");
+        send(source, "[화폐] " + player.getName().getString() + " · " + summary + " · 총 가치 " + context.currencies().totalModernValueWon(player) + "원");
+        return 1;
+    }
+
+    private int currencyTransfer(CommandContext<CommandSourceStack> command, CurrencyType type, boolean give) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer target = EntityArgument.getPlayer(command, "대상");
+        int amount = IntegerArgumentType.getInteger(command, "수량");
+        InventoryCurrencyService.TransferResult result = give ? context.currencies().give(target, type, amount) : context.currencies().take(target, type, amount);
+        String display = context.currencies().catalog().definition(type).displayName();
+        if (result == InventoryCurrencyService.TransferResult.SUCCESS) {
+            send(command.getSource(), "[화폐관리] " + target.getName().getString() + "에게 " + display + " " + amount + "개를 " + (give ? "지급했습니다." : "회수했습니다.")); return 1;
+        }
+        String error = switch (result) { case NO_SPACE -> "인벤토리 공간이 부족합니다."; case INSUFFICIENT -> "대상 플레이어의 화폐가 부족합니다."; case INVALID_AMOUNT -> "수량은 1 이상이어야 합니다."; default -> "처리에 실패했습니다."; };
+        command.getSource().sendFailure(Component.literal("[화폐관리] " + error)); return 0;
     }
 
     private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root(String name) {
@@ -117,7 +198,39 @@ public final class CommandRegistry {
 
     private int cultivate(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = command.getSource().getPlayerOrException();
-        return async(command, context.progressionService().promote(player.getUUID(), command.getSource().getServer().getTickCount()), this::promotionText);
+        CommandSourceStack source = command.getSource();
+        context.progressionService().promote(player.getUUID(), source.getServer().getTickCount()).whenComplete((result, error) ->
+                source.getServer().executeIfPossible(() -> {
+                    if (error != null) { source.sendFailure(Component.literal("[강호] " + root(error).getMessage())); return; }
+                    if (result.status() == PromotionResult.Status.SUCCESS) context.visualEffects().play(player, "REALM_BREAKTHROUGH_SUCCESS", player);
+                    else if (result.status() == PromotionResult.Status.BLOCKED) context.visualEffects().play(player, "REALM_BREAKTHROUGH_FAIL", player);
+                    send(source, promotionText(result));
+                }));
+        return 1;
+    }
+
+    private int menu(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = command.getSource().getPlayerOrException();
+        if (context.menu().tryOpen(player.getUUID(), System.currentTimeMillis()) == com.murimrpg.service.InteractiveMenuService.OpenResult.COOLDOWN) {
+            command.getSource().sendFailure(Component.literal("[강호 메뉴] 잠시 후 다시 열 수 있습니다."));
+            return 0;
+        }
+        var settings = context.menu().settings();
+        player.sendSystemMessage(Component.literal(settings.title()));
+        sendMenuButton(player, "[내 정보]", "/강호 내정보", "현재 경지와 캐릭터 정보를 봅니다.");
+        sendMenuButton(player, "[경지]", "/강호 경지", "다음 경지와 돌파 조건을 봅니다.");
+        sendMenuButton(player, "[문파]", "/강호 문파", "문파 정보를 봅니다.");
+        sendMenuButton(player, "[무공]", "/강호 무공", "현재 무공을 봅니다.");
+        sendMenuButton(player, "[화폐]", "/화폐", "인벤토리 속 화폐를 확인합니다.");
+        sendMenuButton(player, "[도움말]", "/강호 도움말", "사용 가능한 강호 명령어를 봅니다.");
+        player.sendSystemMessage(Component.literal("[스폰] " + settings.spawnMessage()));
+        player.sendSystemMessage(Component.literal("[수련장] " + settings.trainingMessage()));
+        return 1;
+    }
+
+    private static void sendMenuButton(ServerPlayer player, String label, String command, String tooltip) {
+        player.sendSystemMessage(Component.literal(label).withStyle(style -> style.withClickEvent(new ClickEvent.RunCommand(command))
+                .withHoverEvent(new HoverEvent.ShowText(Component.literal(tooltip)))));
     }
 
     private int sect(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

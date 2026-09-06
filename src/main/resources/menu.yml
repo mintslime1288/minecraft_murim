@@ -1,0 +1,5 @@
+menu:
+  cooldown-millis: 2500
+  title: "[강호 메뉴]"
+  spawn-message: "스폰 위치가 아직 설정되지 않았습니다."
+  training-message: "수련장 위치가 아직 설정되지 않았습니다."

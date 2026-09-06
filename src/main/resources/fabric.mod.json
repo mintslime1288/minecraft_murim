@@ -3,13 +3,21 @@
   "id": "murimrpg",
   "version": "${version}",
   "name": "강호이문록",
-  "description": "Fabric 기반 서버 전용 무협 RPG 모드",
-  "environment": "server",
-  "entrypoints": { "main": ["com.murimrpg.GanghoImunrok"] },
+  "description": "Fabric 기반 클라이언트·서버 무협 RPG 모드",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.murimrpg.GanghoImunrok"],
+    "client": ["com.murimrpg.client.MurimRpgClient"]
+  },
+  "mixins": ["murimrpg.client.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "~26.2",
     "java": ">=25",
     "fabric-api": ">=0.158.0"
+  },
+  "recommends": {
+    "player_animation_library": ">=1.2.6",
+    "bendable_cuboids": ">=2.0.4"
   }
 }

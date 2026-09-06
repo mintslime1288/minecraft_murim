@@ -1,0 +1,30 @@
+# Visual-only articulated player body. It reads the active Minecraft skin texture;
+# it never changes the server hitbox, movement or combat rules.
+# Native ModelPart hierarchy: uses Mojang's normal player-model coordinate path,
+# not the unsafe deferred custom-geometry experiment.
+# PAL + Bendable Cuboids is now the primary skin-preserving joint renderer.
+# Keep this experimental replacement available only as a fallback/debug path.
+enabled: false
+walk:
+  stride-degrees: 31.0
+  knee-degrees: 29.0
+  elbow-degrees: 14.0
+  body-turn-degrees: 4.5
+  # This mirrors HumanoidModel 26.2's limb-swing multiplier.
+  limb-swing-scale: 0.6662
+run:
+  stride-degrees: 42.0
+  knee-degrees: 38.0
+  elbow-degrees: 26.0
+retarget:
+  # Meshy Humanoid local rotations converted into Minecraft ModelPart rotations.
+  upper-leg-gain: 1.20
+  lower-leg-gain: 1.35
+  upper-arm-gain: 1.0
+  lower-arm-gain: 1.0
+fast-run:
+  # Horizontal client velocity above this value selects 빠르게 달리기.glb.
+  horizontal-speed-threshold: 0.13
+diagnostics:
+  # One INFO line per client run after final ModelPart submission; never per frame.
+  log-once: false

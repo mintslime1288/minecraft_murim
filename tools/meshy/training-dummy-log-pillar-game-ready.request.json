@@ -1,0 +1,19 @@
+{
+  "asset_id": "training_dummy_log_pillar_game_ready",
+  "endpoint": "image-to-3d",
+  "image_file": "assets-source/meshy/training_dummy_log_pillar_image_guided/reference-log-pillar.png",
+  "request": {
+    "model_type": "smart-topology",
+    "ai_model": "meshy-t2",
+    "target_polycount": 1800,
+    "should_texture": true,
+    "enable_pbr": false,
+    "texture_resolution": "2k",
+    "texture_prompt": "single slender upright training-log pillar; continuous dark walnut wood with fine vertical grain, subtle bark seams, natural warm worn edges, and a plain top end-cap ring only; no circular target, disc, emblem, carving, panel, rope, arms, base, or attached object; smooth closed cylinder silhouette suitable for a real-time game prop",
+    "auto_size": true,
+    "origin_at": "bottom",
+    "alpha_thumbnail": true,
+    "multi_view_thumbnails": true,
+    "target_formats": ["glb"]
+  }
+}

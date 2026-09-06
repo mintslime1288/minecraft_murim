@@ -1,0 +1,20 @@
+{
+  "name": "pal_walk",
+  "author": "MurimRPG",
+  "description": "Grounded adult walk with opposing shoulders and knee flexion",
+  "emote": {
+    "isLoop": true,
+    "returnTick": 0,
+    "beginTick": 0,
+    "endTick": 24,
+    "stopTick": 25,
+    "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": -0.48, "bend": 0.08}, "leftLeg": {"roll": -0.028, "pitch": 0.38, "bend": 0.30}, "rightArm": {"pitch": 0.24, "bend": -0.10}, "leftArm": {"pitch": -0.24, "bend": -0.08}, "torso": {"pitch": 0.018, "yaw": 0.014, "roll": -0.003, "bend": 0.014}},
+      {"tick": 6, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": 0.02, "bend": 0.22}, "leftLeg": {"roll": -0.028, "pitch": -0.03, "bend": 0.10}, "rightArm": {"pitch": -0.015, "bend": -0.10}, "leftArm": {"pitch": 0.015, "bend": -0.09}, "torso": {"pitch": 0.022, "yaw": 0.0, "roll": 0.002, "bend": 0.016}},
+      {"tick": 12, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": 0.38, "bend": 0.30}, "leftLeg": {"roll": -0.028, "pitch": -0.48, "bend": 0.08}, "rightArm": {"pitch": -0.24, "bend": -0.08}, "leftArm": {"pitch": 0.24, "bend": -0.10}, "torso": {"pitch": 0.018, "yaw": -0.014, "roll": 0.003, "bend": 0.014}},
+      {"tick": 18, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": -0.03, "bend": 0.10}, "leftLeg": {"roll": -0.028, "pitch": 0.02, "bend": 0.22}, "rightArm": {"pitch": 0.015, "bend": -0.09}, "leftArm": {"pitch": -0.015, "bend": -0.10}, "torso": {"pitch": 0.022, "yaw": 0.0, "roll": -0.002, "bend": 0.016}},
+      {"tick": 24, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": -0.48, "bend": 0.08}, "leftLeg": {"roll": -0.028, "pitch": 0.38, "bend": 0.30}, "rightArm": {"pitch": 0.24, "bend": -0.10}, "leftArm": {"pitch": -0.24, "bend": -0.08}, "torso": {"pitch": 0.018, "yaw": 0.014, "roll": -0.003, "bend": 0.014}}
+    ]
+  }
+}

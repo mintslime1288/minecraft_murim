@@ -1,0 +1,12 @@
+{
+  "name": "pal_jump_rise",
+  "author": "MurimRPG",
+  "description": "Balanced rising pose without root translation",
+  "emote": {
+    "isLoop": false, "returnTick": 0, "beginTick": 0, "endTick": 5, "stopTick": 6, "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEOUTQUAD", "rightLeg": {"pitch": -0.16, "bend": 0.24}, "leftLeg": {"pitch": 0.19, "bend": 0.20}, "rightArm": {"pitch": 0.13, "roll": 0.04, "bend": -0.16}, "leftArm": {"pitch": -0.11, "roll": -0.04, "bend": -0.16}, "torso": {"pitch": -0.07}},
+      {"tick": 5, "easing": "EASEINOUTSINE", "rightLeg": {"pitch": -0.12, "bend": 0.26}, "leftLeg": {"pitch": 0.16, "bend": 0.22}, "rightArm": {"pitch": 0.10, "roll": 0.05, "bend": -0.18}, "leftArm": {"pitch": -0.08, "roll": -0.05, "bend": -0.18}, "torso": {"pitch": -0.055}}
+    ]
+  }
+}

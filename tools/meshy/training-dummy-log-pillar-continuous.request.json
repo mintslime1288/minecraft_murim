@@ -1,0 +1,20 @@
+{
+  "asset_id": "training_dummy_log_pillar_continuous",
+  "endpoint": "text-to-3d",
+  "request": {
+    "prompt": "A high-quality single upright martial arts training log, shaped as a natural continuous 12-sided cylindrical hardwood trunk, slightly tapering from a 0.7 meter round base to a 0.6 meter round top, 1.75 meters tall. The silhouette must be rounded like a real vertical cut log, not a square post. Detailed uninterrupted walnut wood grain flows vertically around every side, with subtle uneven bark grooves and softly worn beveled edges. Show a realistic concentric tree-ring cross-section only on the top end and bottom end. The front surface is seamless plain wood with no target, no circle, no emblem, no carving, no knot ornament, no panel and no attached pieces. No arms, head, ropes, pedestal or base. Isolated game-ready prop, clean topology, physically plausible wood material.",
+    "ai_model": "latest",
+    "ultra_mode": true,
+    "should_remesh": false,
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  },
+  "refine": {
+    "ai_model": "latest",
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "texture_prompt": "high-quality continuous dark walnut training-log wood, fine vertical grain wrapping naturally around a rounded twelve-sided cylinder, subtle dark bark grooves and warm worn-edge highlights, concentric rings only on the two cut end caps, plain uninterrupted front surface, no circle, no target, no symbol, no carving, no metal and no rope, physically based wood texture",
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  }
+}

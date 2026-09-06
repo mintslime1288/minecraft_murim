@@ -1,0 +1,20 @@
+{
+  "asset_id": "training_dummy_log_pillar",
+  "endpoint": "text-to-3d",
+  "request": {
+    "prompt": "A single upright martial arts training log pillar, slightly tapered octagonal cylinder, dark walnut wood bark with vertical grain, visible tree rings on the top and bottom, one subtle circular impact target on the front, no arms, no head, no ropes, no base, isolated object, game-ready clean topology, realistic hand-painted PBR wood texture",
+    "ai_model": "latest",
+    "ultra_mode": true,
+    "should_remesh": false,
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  },
+  "refine": {
+    "ai_model": "latest",
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "texture_prompt": "dark walnut martial arts training log, vertically flowing wood grain, weathered bark, subtle circular impact target, no metal, no rope, realistic PBR wood",
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  }
+}

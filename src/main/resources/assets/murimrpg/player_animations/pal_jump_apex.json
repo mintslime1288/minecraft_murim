@@ -1,0 +1,13 @@
+{
+  "name": "pal_jump_apex",
+  "author": "MurimRPG",
+  "description": "Soft apex suspension without root translation",
+  "emote": {
+    "isLoop": true, "returnTick": 0, "beginTick": 0, "endTick": 8, "stopTick": 9, "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEINOUTSINE", "rightLeg": {"pitch": -0.06, "bend": 0.25}, "leftLeg": {"pitch": 0.09, "bend": 0.23}, "rightArm": {"pitch": 0.04, "roll": 0.06, "bend": -0.17}, "leftArm": {"pitch": -0.03, "roll": -0.06, "bend": -0.17}, "torso": {"pitch": -0.035}},
+      {"tick": 4, "easing": "EASEINOUTSINE", "rightLeg": {"pitch": -0.03, "bend": 0.27}, "leftLeg": {"pitch": 0.06, "bend": 0.25}, "rightArm": {"pitch": 0.02, "roll": 0.07, "bend": -0.18}, "leftArm": {"pitch": -0.01, "roll": -0.07, "bend": -0.18}, "torso": {"pitch": -0.025}},
+      {"tick": 8, "easing": "EASEINOUTSINE", "rightLeg": {"pitch": -0.06, "bend": 0.25}, "leftLeg": {"pitch": 0.09, "bend": 0.23}, "rightArm": {"pitch": 0.04, "roll": 0.06, "bend": -0.17}, "leftArm": {"pitch": -0.03, "roll": -0.06, "bend": -0.17}, "torso": {"pitch": -0.035}}
+    ]
+  }
+}

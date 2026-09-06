@@ -1,0 +1,13 @@
+animations:
+  IDLE_BREATH:
+    display-name: "대기 호흡"
+  WALK_SWAY:
+    display-name: "걷기 보정"
+  SPRINT_SWAY:
+    display-name: "달리기 보정"
+  UNARMED_STRIKE:
+    display-name: "맨주먹 타격"
+  BASIC_SWORD_STRIKE:
+    display-name: "기본 검 타격"
+  WOODEN_SWORD_STRIKE:
+    display-name: "목검 수련 타격"

@@ -1,0 +1,14 @@
+﻿{
+    "asset_id":  "murim_player_base",
+    "meshy_task_id":  "01a06f22-4dc6-74fd-ab31-1335c258b22c",
+    "meshy_endpoint":  "text-to-3d",
+    "source_tool":  "Meshy",
+    "downloaded_at_utc":  "2026-09-05T01:16:24.6420553Z",
+    "original_request_file":  "C:\\Users\\윤재영\\Documents\\Codex\\2026-08-29\\skf\\minecraft_murim\\tools\\meshy\\murim-player-walk.request.json",
+    "reference_image_file":  null,
+    "reference_image_sha256":  null,
+    "license_status":  "REVIEW_REQUIRED",
+    "model_file":  "model.glb",
+    "thumbnail_file":  "preview.png",
+    "sha256":  "E537EE54A77E3699CA343F55BFE2929C899F3E611EE9EBCBAAB3981C1E64F32A"
+}

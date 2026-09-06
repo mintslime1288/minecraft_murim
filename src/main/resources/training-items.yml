@@ -1,0 +1,16 @@
+items:
+  WOODEN_SWORD:
+    display-name: "목검"
+    material: WOODEN_SWORD
+    custom-model-data: 32001
+    lore: "나무로 만든 기본 수련용 검입니다."
+  TRAINING_DUMMY:
+    display-name: "훈련 허수아비"
+    material: ARMOR_STAND
+    custom-model-data: 32002
+    lore: "설치 후 목검으로 수련할 수 있는 통나무 수련대입니다."
+dummy:
+  exp-per-hit: 2
+  hit-cooldown-millis: 350
+  require-wooden-sword: true
+  visual-custom-model-data: 32003

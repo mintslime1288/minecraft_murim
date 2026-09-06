@@ -1,0 +1,26 @@
+# Physical inventory currency only. Values are modern Korean-won reference values.
+currencies:
+  YEOPJEON:
+    display-name: "엽전"
+    material: COPPER_INGOT
+    custom-model-data: 31001
+    modern-value-won: 100
+    lore: "구리 조각으로 빚은 강호의 하위 화폐입니다."
+  CHEOLJEON:
+    display-name: "철전"
+    material: IRON_NUGGET
+    custom-model-data: 31002
+    modern-value-won: 1000
+    lore: "철 조각으로 만든 단단한 중하 화폐입니다."
+  EUNWONBO:
+    display-name: "은원보"
+    material: IRON_INGOT
+    custom-model-data: 31003
+    modern-value-won: 100000
+    lore: "은빛 철 주괴로 만든 중위 화폐입니다."
+  GEUMWONBO:
+    display-name: "금원보"
+    material: GOLD_INGOT
+    custom-model-data: 31004
+    modern-value-won: 100000000
+    lore: "금으로 빚은 강호의 상위 화폐입니다."

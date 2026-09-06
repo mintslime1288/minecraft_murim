@@ -1,0 +1,124 @@
+# 기본 이동·전투 연출
+
+이 문서는 전용 Fabric 클라이언트가 설치된 플레이어에게만 적용되는 시각 연출을 설명한다. 피해량, 경험치, 화폐, 인벤토리, 경지와 쿨다운은 항상 서버가 판정한다.
+
+> 2026-09-06 현재 보행 기준선: Meshy GLB 키프레임은 Minecraft 팔·다리 회전에 직접 리타게팅하지 않는다. 실제 검증에서 다리가 수평으로 뻗는 실패가 확인됐기 때문이다. 활성화되는 보행은 바닐라 플레이어 메시의 회전만 사용하는 네이티브 절차 보행이며, 걷기 상태에서만 작동한다. 달리기·점프·공격·아이템 사용·수영·웅크리기·탑승은 바닐라 동작을 유지한다. GLB 원본과 Blender 원본은 보존하지만 별도 검증 전에는 재활성화하지 않는다.
+
+## 현재 구현
+
+2026-09-05부터 기본 플레이어 동작은 Minecraft 26.2용 Player Animation Library(PAL)
+1.2.6과 Bendable Cuboids 2.0.4를 사용한다. PAL은 대기·걷기·달리기·빠른 달리기,
+점프의 이륙·상승·정점·하강·착지와 상체 공격 레이어의 우선순위를 관리하고,
+Bendable Cuboids는 기존 64x64 Minecraft
+스킨의 팔·다리 큐브를 실제로 굽혀 팔꿈치와 무릎을 표시한다. 플레이어를 Meshy
+외형으로 교체하지 않으며 서버 히트박스나 전투 판정도 변경하지 않는다.
+
+PAL/Bendable Cuboids 모델 공간에서 팔의 음수 `bend`는 팔꿈치가 정상적으로 뒤쪽을
+향해 접히는 방향이다. 양수 `bend`는 팔꿈치가 가슴 앞쪽으로 반전되어 보이므로
+MurimRPG의 모든 기본 동작과 공격 동작은 팔에 0 이하의 bend만 사용한다.
+
+- 대기: 숨 쉬는 정도의 작은 팔 보정
+- 일반 걷기: 24틱 접지 주기와 반대쪽 팔·다리 교차, 작은 몸통 반회전, 팔꿈치·무릎 굽힘을 사용한다.
+- 달리기: 16틱 주기, 전방 상체 기울기, 커진 보폭과 관절 충격 흡수를 사용한다.
+- 빠른 달리기: 12틱 주기를 사용하되 루트 위치와 카메라는 움직이지 않는다.
+- 맨주먹·기본 검 공격: 이동 레이어보다 높은 상체 레이어로 준비·타격·회수 동작을 재생한다.
+- 이동: `NORMAL`, `HIGH` 품질에서만 간격을 둔 작은 발밑 먼지
+- 맨주먹으로 실제 명중: 작은 치명타 파티클과 타격음
+- 일반 검으로 실제 명중: 짧은 검 궤적 파티클과 휘두르기 소리
+- 목검으로 훈련 허수아비 명중: 기존 목검 궤적, 통나무 충격, 수련 EXP 안내
+
+공중에서 휘두르기만 한 경우에는 서버 명중 판정이 없으므로 맨주먹·일반 검의 명중 이펙트를 보내지 않는다. 이 규칙은 클라이언트가 가짜 명중 연출을 만들지 못하게 한다.
+
+## 설정
+
+- 서버 이펙트: `run/config/murimrpg/effects.yml`
+- 클라이언트 품질: `.minecraft/config/murimrpg/client-visuals.yml`
+- 일반 걷기 진폭: `.minecraft/config/murimrpg/natural-walk.yml` (최초 실행 시 생성). `leg-strength`, `arm-strength`, `torso-lean-radians`, `side-sway-radians`, `arm-roll-radians`가 다리·팔·상체의 회전만 조절한다. `swing-harmonic`은 발 디딤의 감속감을 만드는 작은 3차 하모닉이며 좌우 반대 위상을 유지한다. `stride-length-blocks`는 한 보행 주기에 대응하는 이동 거리이며, 임의 위상 배율 대신 사용한다. `phase-enter-speed`와 `phase-exit-speed`는 저속 깜빡임을 막는 히스테리시스 경계다. `shoulder-counter-yaw-radians`은 상체 반대회전을 제어한다. 팔·다리 상한은 `maximum-arm-radians`와 `maximum-leg-radians`로 따로 제한한다. 숫자는 안전 범위의 유한값이어야 하며, Y축 이동·루트 모션·모델 교체 및 실제 이동 속도에는 사용되지 않는다.
+- 걷기 비교/진단: `/murimwalk off`, `/murimwalk on`, `/murimwalk status`, `/murimwalk debug on|off`. 전부 클라이언트 전용이며 서버 데이터나 이동 속도를 바꾸지 않는다. 진단 로그는 최대 5초에 한 번만 기록된다.
+- 애니메이션 ID 목록: `run/config/murimrpg/animations.yml`
+- PAL 관절 설정: `.minecraft/config/murimrpg/pal-player-animation.yml`
+
+`quality`는 `LOW`, `NORMAL`, `HIGH` 중 하나다. `LOW`는 발밑 먼지를 끄며, 모든 서버 게임 규칙은 어느 품질에서도 동일하다. YAML을 바꾼 뒤에는 해당 게임(서버 또는 클라이언트)을 다시 시작한다.
+
+## 안전 fallback
+
+PAL 또는 Bendable Cuboids가 없거나 11개 애니메이션 자산 검증이 실패하면 커스텀
+레이어를 활성화하지 않고 기존 바닐라/legacy 경로를 유지한다. 일반 점프는 PAL의
+관절 자세를 유지하며 수영, 웅크리기, 탑승, 겉날개 비행, 수면과 사망은 바닐라 자세가
+우선한다. 1인칭에는 PAL의 3인칭 전신
+모델을 렌더링하지 않으므로 카메라가 몸 안에 들어가거나 앞뒤가 반전되지 않는다.
+
+## 범위와 다음 확장
+
+고밀도 GLB 전체 플레이어 교체는 기본 비활성이다. 현재 관절은 별도 인간형 메시를
+덧씌우는 방식이 아니라 기존 Minecraft 스킨 큐브를 연속적으로 굽히는 방식이다.
+
+PAL 관절 경로가 활성화되면 과거 Meshy 키프레임 실험 경로는 중복 적용되지 않는다.
+기본 Minecraft 스킨·겉옷·방어구·손 아이템을 그대로 렌더링하고 Bendable Cuboids가
+팔꿈치와 무릎 굽힘만 추가한다. 서버 이동 속도·피해·충돌은 변경하지 않는다.
+
+원본은 `assets-source/meshy/murim_player_base/`에, 리깅 결과와 해시는 그 아래 `rigged/`에 보관한다. 실제 클라이언트 애니메이션 자산은 `assets/murimrpg/models_glb/player/walking.glb`이다. 외부 배포 전 Meshy 라이선스 상태를 검토해야 한다.
+
+실제 26.2 클라이언트에서 일반 걷기의 보간 속도는 약 `0.286`으로 측정됐다. 이 값을 다시 진폭에 직접 곱하던 이전 구현은 사용자 설정의 약 29%만 보여 바닐라와 차이가 거의 없었다. 현재 구현은 `0.02..0.35` 구간을 부드러운 보간 곡선으로 정규화하여 출발·정지는 유지하면서 일반 걷기 보폭을 분명하게 표시한다.
+
+## 수동 확인
+
+1. 전용 Fabric 클라이언트로 `localhost:25565`에 접속한다.
+2. 평지에서 걷고 달려 팔 움직임과 발밑 먼지를 확인한다.
+   - F5 3인칭에서 빈손으로 걷고 멈추기를 반복한다. 오른다리와 왼팔이 동시에 나가는지 확인한다.
+   - 스킨 기본형/슬림형, 방어구 착용, 왼손 설정, 목검/방패 장착도 확인한다.
+   - 점프·수영·웅크리기·공격 중 기존 자세가 보존되는지 확인한다.
+3. 몬스터를 맨주먹으로 명중해 작은 충격 파티클을 확인한다.
+4. 일반 바닐라 검으로 몬스터를 명중해 짧은 궤적을 확인한다.
+5. `/아이템관리 지급 GODyjy 목검 1`과 `/아이템관리 지급 GODyjy 훈련허수아비 1`을 사용한 뒤, 허수아비를 목검으로 명중해 수련 연출과 EXP 메시지를 확인한다.
+
+일반 갑옷거치대와 일반 바닐라 나무 검에는 훈련 허수아비 전용 보상·충격 연출이 적용되지 않아야 한다.
+# 자연스러운 걷기·달리기 애니메이션
+
+Meshy의 원본 `walking.glb`와 `running.glb`에는 0.01 배율 Armature가 포함되어 있어, 직접 CPU 스키닝 시
+실제 모델이 최대 약 179블록 높이까지 늘어나는 문제가 있었다. 원본은
+`assets-source/meshy/murim_player_base/rigged/`에 보존하고, Blender 5.2에서 Armature 배율을 뼈대 데이터에
+굽는 방식으로 재내보낸 검증본을 실제 클라이언트 자산으로 사용한다.
+
+클라이언트는 시작 시 0%, 25%, 50%, 75%, 100% 키프레임의 실제 스키닝 bounds를 검사한다. 하나라도 안전
+범위를 넘으면 **고밀도 메시를 제출하지 않고 바닐라 플레이어 모델로 자동 복귀한다.** 이 처리는 크래시·거대
+모델·프레임 저하를 막는 안전장치다.
+
+기본 설정은 `player-model.yml`의 `enabled: false`다. 따라서 플레이어 자신의 Minecraft 스킨·방어구·손에
+든 목검이 보이며, 고밀도 Meshy body replacement는 별도 테스트를 위해서만 `true`로 켠다. 걷기·달리기
+관절 보정은 body replacement가 꺼진 상태에서도 바닐라 플레이어 모델에 적용된다.
+
+걷기·달리기 자체는 기존 animation-only 보정으로 계속 적용된다. 즉 기본 Minecraft 스킨·갑옷·손 아이템을
+유지하면서, Meshy 키프레임의 관절 회전만 바닐라 팔·다리 보정에 사용한다. 서버 이동 속도, 충돌, 피해,
+경험치, 화폐 판정은 변경하지 않는다.
+
+재내보낸 `.blend`와 `.glb`는 `assets-source/meshy/murim_player_base/rebaked/`에 함께 보관한다. 실제
+클라이언트 GLB를 교체할 때는 `GlbAssetValidator`의 모든 bounds 검사를 통과해야 한다. 현재
+`player-model.yml`의 배율 `1.0`은 재내보낸 GLB의 1.8블록 인체 높이 기준이다.
+
+## GLB 축·루트 모션 보정
+
+GLB는 Y-up, Minecraft humanoid model space는 Y-down이므로 `player-model.yml`의
+`coordinate-correction.flip-vertical: true`로 Y축만 반전한다. Meshy의 forward axis는 Minecraft avatar의
+forward axis와 반대라서 `coordinate-correction.yaw-degrees: 180`으로 수평 방향만 보정한다. 캐릭터가
+거꾸로 서 보이거나 F5에서 앞·뒤가 반대로 보일 때는 이 설정을 임의로 끄지 말고, 먼저 최신 클라이언트
+JAR이 적용됐는지 확인한다.
+
+Meshy walking/running clip의 `Hips` translation은 제자리 걷기가 아닌 영상용 root motion이다. 클라이언트는
+Hips의 X/Y/Z translation 전체를 bind 위치에 고정하고 관절 회전만 사용한다. 따라서 걸을 때 모델 전체가
+위아래로 튀거나 앞으로 미끄러지지 않으며, 실제 이동은 Minecraft 서버가 계속 판정한다.
+
+현재 PAL 설정은 클라이언트의 `.minecraft/config/murimrpg/pal-player-animation.yml`에서 관리한다.
+불안정한 모션이 화면을 깨뜨리지 않도록 새 설치의 기본값은 `enabled: false`인 안정적인
+바닐라 플레이어 기준선이다. 검증된 모션만 수동으로 `true`로 켜서 비교한다.
+기본값 `third-party-provider.prefer-when-installed: false`는 MurimRPG의 PAL+Bendable
+Cuboids 관절 모션을 우선한다. CPA JAR이 설치되어 있어도 이 값이 `false`이면 MurimRPG의
+걷기·달리기·점프·펀치·목검 클립을 우회하지 않는다. CPA에 모든 자세를 맡기고 싶을 때만
+`true`로 바꾸고 클라이언트를 재시작한다.
+지상·공중 전환은 게임 틱과 실제 수직 속도를 사용하며, root translation이나 scale을 사용하지 않는다.
+설정 변경 후에는 클라이언트를 다시 시작한다. 게임 판정과 이동 속도는 바뀌지 않는다.
+
+최근 보행 튜닝에서는 `pal_walk`의 몸통 좌우 회전·롤을 발걸음보다 약하게 낮추고, 팔 스윙과
+팔꿈치 굽힘을 어깨 중심의 작은 앞뒤 움직임으로 보정했다. `pal_run`과 `pal_fast_run`도
+전방 기울기는 유지하되 좌우 흔들림을 제한했다. 실제 속도 상태 선택과 전환은 PAL 상태
+선택기가 담당하며, 모든 플레이어 위치·충돌·서버 판정은 기존 Minecraft 경로를 유지한다.

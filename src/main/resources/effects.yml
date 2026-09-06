@@ -1,0 +1,37 @@
+effects:
+  FIST_IMPACT:
+    display-name: "맨주먹 타격"
+    duration-ticks: 2
+    scale: 0.7
+    max-distance: 16
+    particle-count: 8
+  BASIC_SWORD_HIT:
+    display-name: "기본 검 타격"
+    duration-ticks: 3
+    scale: 0.9
+    max-distance: 24
+    particle-count: 14
+  WOODEN_SWORD_SWING:
+    display-name: "목검 궤적"
+    duration-ticks: 3
+    scale: 1.0
+    max-distance: 24
+    particle-count: 18
+  TRAINING_DUMMY_HIT:
+    display-name: "통나무 타격"
+    duration-ticks: 4
+    scale: 1.0
+    max-distance: 32
+    particle-count: 24
+  REALM_BREAKTHROUGH_SUCCESS:
+    display-name: "경지 돌파 성공"
+    duration-ticks: 20
+    scale: 2.4
+    max-distance: 48
+    particle-count: 64
+  REALM_BREAKTHROUGH_FAIL:
+    display-name: "경지 돌파 실패"
+    duration-ticks: 10
+    scale: 1.2
+    max-distance: 32
+    particle-count: 16

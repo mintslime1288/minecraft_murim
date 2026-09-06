@@ -1,0 +1,38 @@
+# Vanilla player mesh only. GLB geometry is never rendered.
+# Stable baseline: do not alter Mojang's player pose until custom motion is validated.
+enabled: false
+walk:
+  speed-multiplier: 0.92
+  arm-strength: 0.46
+  leg-strength: 0.62
+  body-strength: 0.16
+  # Native procedural gait only: no GLB skeleton or root motion is used.
+  torso-lean-radians: 0.040
+  side-sway-radians: 0.006
+  arm-roll-radians: 0.025
+  # Small third harmonic retains left/right opposition while easing foot plant.
+  swing-harmonic: 0.06
+  # One full gait cycle covers this distance in blocks; it avoids an arbitrary phase multiplier.
+  stride-length-blocks: 3.20
+  # Hysteresis prevents walk/idle flicker when render speed hovers near zero.
+  phase-enter-speed: 0.025
+  phase-exit-speed: 0.010
+  shoulder-counter-yaw-radians: 0.008
+  minimum-speed-threshold: 0.005
+run:
+  speed-multiplier: 1.12
+  # Walk-only milestone: custom run pose is disabled until the run pass.
+  arm-strength: 0.0
+  leg-strength: 0.0
+  body-strength: 0.0
+transition:
+  blend-in-seconds: 0.20
+  blend-out-seconds: 0.18
+safety:
+  maximum-limb-radians: 1.20
+  maximum-leg-radians: 1.20
+  maximum-arm-radians: 0.85
+  maximum-body-radians: 0.24
+  maximum-shoulder-yaw-radians: 0.050
+diagnostics:
+  log-interval-seconds: 5

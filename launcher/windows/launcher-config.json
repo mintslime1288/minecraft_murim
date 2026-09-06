@@ -1,0 +1,11 @@
+{
+  "displayName": "MurimRPG",
+  "serverAddress": "localhost:25565",
+  "minecraftDirectory": "%APPDATA%\\.minecraft",
+  "fabricProfileId": "fabric-loader-26.2",
+  "fabricVersionId": "fabric-loader-0.19.3-26.2",
+  "defaultRamMiB": 4096,
+  "minimumRamMiB": 2048,
+  "maximumRamMiB": 6144,
+  "manifestFile": "manifest.json"
+}

@@ -1,0 +1,6 @@
+quality: NORMAL
+idle-breath-radians: 0.012
+walk-arm-sway-radians: 0.035
+sprint-arm-sway-radians: 0.055
+footstep-interval-ticks: 7
+max-particles: 48

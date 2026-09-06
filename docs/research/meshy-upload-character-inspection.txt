@@ -1,0 +1,3 @@
+source=C:\Users\윤재영\Documents\Codex\2026-08-29\skf\minecraft_murim\assets-source\blender\meshy-upload-character\murim_player_tpose_for_meshy.glb
+object name='MurimRPG_Original_TPose_Character' type=MESH parent='<none>' location=(0.0, 0.0, 0.0) rotation=(0.0, 0.0, 0.0) scale=(1.0, 1.0, 1.0)
+  vertices=360 polygons=180

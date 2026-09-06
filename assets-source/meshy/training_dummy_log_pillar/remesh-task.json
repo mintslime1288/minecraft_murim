@@ -1,0 +1,8 @@
+{
+  "task_id": "01a066da-add0-754b-bf13-593494e85082",
+  "source_refine_task_id": "01a066d4-cc1a-777c-96e8-ac60eff0b80c",
+  "requested_topology": "triangle",
+  "requested_target_polycount": 8000,
+  "status": "SUCCEEDED",
+  "output_file": "model-optimized.glb"
+}

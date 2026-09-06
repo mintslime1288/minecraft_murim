@@ -20,6 +20,43 @@ world/
 world_nether/
 world_the_end/
 *.log
+.env
+tools/meshy/meshy-api-key.txt
+assets-source/meshy/**/model.glb
+assets-source/meshy/**/preview*.png
+
+# --- Binary asset sources -------------------------------------------------
+# This repository is public. Meshy-derived meshes, rigs, animations, and
+# generated texture sources must remain local unless redistribution is approved.
+assets-source/**/*.glb
+assets-source/**/*.fbx
+assets-source/**/*.blend1
+assets-source/meshy/**/*.blend
+assets-source/meshy/**/*.png
+assets-source/generated/**/*.png
+assets-source/blender/**/*_meshy_walk_editable.blend
+assets-source/blender/**/*preview*.png
+# Intentionally tracked: the small Murim-authored player-rig .blend files,
+# Python exporters, and Markdown/JSON metadata.
+
+# Runtime copies of Meshy-derived player/dummy meshes and their generated
+# texture remain local build inputs; they are not source-controlled here.
+src/main/resources/assets/murimrpg/models_glb/**/*.glb
+src/main/resources/assets/murimrpg/textures/entity/training_dummy_log_continuous.png
+
+# Compiled launcher output is reproducible from launcher/windows/.
+launcher/release/*.exe
+
+# Local player data and mod backups. These normally live outside this repo.
+*.db
+*.sqlite
+*.sqlite3
+murimrpg-backups/
+.minecraft/
+
+# JAR files except the Gradle wrapper, including after wrapper regeneration.
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
 eula.txt
 server.properties
 banned-ips.json

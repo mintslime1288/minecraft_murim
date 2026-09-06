@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "murimrpg:block/training_dummy_collision" }
+  }
+}

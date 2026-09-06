@@ -1,0 +1,14 @@
+{
+  "asset_id": "training_dummy_log_pillar_image_guided",
+  "meshy_task_id": "01a066e9-e243-72cf-ba3d-dda30b9231f7",
+  "meshy_endpoint": "image-to-3d",
+  "source_tool": "Meshy",
+  "downloaded_at_utc": "2026-09-03T10:58:30.5085272Z",
+  "original_request_file": "C:\\Users\\윤재영\\Documents\\Codex\\2026-08-29\\skf\\minecraft_murim\\tools\\meshy\\training-dummy-log-pillar-image-guided.request.json",
+  "reference_image_file": "C:\\Users\\윤재영\\Documents\\Codex\\2026-08-29\\skf\\minecraft_murim\\assets-source\\meshy\\training_dummy_log_pillar_image_guided\\reference-log-pillar.png",
+  "reference_image_sha256": "A7CA3082F66E3A8708B8E11DD839237930DB9B882072E6D77A061604768AFCBB",
+  "license_status": "REVIEW_REQUIRED",
+  "model_file": "model.glb",
+  "thumbnail_file": "preview.png",
+  "sha256": "1A4509CF757D5A3C3C6BAE78A705CDDD679FB18BAD61CBC3AF586EFDC33B4817"
+}

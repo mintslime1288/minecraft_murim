@@ -1,0 +1,13 @@
+{
+  "name": "pal_jump_land",
+  "author": "MurimRPG",
+  "description": "Brief knee absorption and recovery without root translation",
+  "emote": {
+    "isLoop": false, "returnTick": 0, "beginTick": 0, "endTick": 5, "stopTick": 6, "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEOUTQUAD", "rightLeg": {"pitch": 0.08, "bend": 0.33}, "leftLeg": {"pitch": 0.08, "bend": 0.33}, "rightArm": {"pitch": 0.07, "bend": -0.18}, "leftArm": {"pitch": 0.07, "bend": -0.18}, "torso": {"pitch": -0.07}},
+      {"tick": 2, "easing": "EASEINOUTQUAD", "rightLeg": {"pitch": 0.10, "bend": 0.42}, "leftLeg": {"pitch": 0.10, "bend": 0.42}, "rightArm": {"pitch": 0.10, "bend": -0.20}, "leftArm": {"pitch": 0.10, "bend": -0.20}, "torso": {"pitch": -0.095}},
+      {"tick": 5, "easing": "EASEOUTQUAD", "rightLeg": {"pitch": 0.0, "bend": 0.05}, "leftLeg": {"pitch": 0.0, "bend": 0.05}, "rightArm": {"pitch": 0.0, "bend": -0.05}, "leftArm": {"pitch": 0.0, "bend": -0.05}, "torso": {"pitch": 0.0}}
+    ]
+  }
+}

@@ -8,7 +8,8 @@ import java.util.List;
 
 public final class ModResources {
     public static final List<String> CONFIG_FILES = List.of("config.yml", "character.yml", "gangho.yml",
-            "factions.yml", "sects.yml", "ranks.yml", "skills.yml", "monsters.yml", "quests.yml", "realms.yml", "ui.yml");
+            "factions.yml", "sects.yml", "ranks.yml", "skills.yml", "monsters.yml", "quests.yml", "realms.yml", "ui.yml",
+            "currencies.yml", "training-items.yml", "effects.yml", "animations.yml", "menu.yml");
 
     public void installDefaults(Path directory) throws IOException {
         Files.createDirectories(directory);

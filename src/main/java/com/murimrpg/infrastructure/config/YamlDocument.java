@@ -40,6 +40,7 @@ public final class YamlDocument {
     public boolean contains(String path) { return get(path) != null; }
     public String string(String path) { Object value = get(path); return value instanceof String text ? text : null; }
     public int integer(String path, int fallback) { Object value = get(path); return value instanceof Number n ? n.intValue() : fallback; }
+    public double decimal(String path, double fallback) { Object value = get(path); return value instanceof Number n ? n.doubleValue() : fallback; }
     public int integerIn(String mapPath, String key, int fallback) {
         Object parent = get(mapPath);
         if (!(parent instanceof Map<?, ?> map)) return fallback;

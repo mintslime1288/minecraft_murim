@@ -1,0 +1,20 @@
+{
+  "name": "pal_fast_run",
+  "author": "MurimRPG",
+  "description": "Fast martial sprint without root translation or camera bob",
+  "emote": {
+    "isLoop": true,
+    "returnTick": 0,
+    "beginTick": 0,
+    "endTick": 12,
+    "stopTick": 13,
+    "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": -0.92, "bend": 0.14}, "leftLeg": {"roll": -0.050, "pitch": 0.72, "bend": 0.68}, "rightArm": {"pitch": 0.72, "bend": -0.48}, "leftArm": {"pitch": -0.62, "bend": -0.42}, "torso": {"pitch": -0.16, "yaw": 0.028, "roll": -0.006, "bend": -0.035}},
+      {"tick": 3, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": 0.02, "bend": 0.50}, "leftLeg": {"roll": -0.050, "pitch": -0.10, "bend": 0.24}, "rightArm": {"pitch": -0.05, "bend": -0.52}, "leftArm": {"pitch": 0.05, "bend": -0.50}, "torso": {"pitch": -0.18, "yaw": 0.0, "roll": 0.006, "bend": -0.040}},
+      {"tick": 6, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": 0.72, "bend": 0.68}, "leftLeg": {"roll": -0.050, "pitch": -0.92, "bend": 0.14}, "rightArm": {"pitch": -0.62, "bend": -0.42}, "leftArm": {"pitch": 0.72, "bend": -0.48}, "torso": {"pitch": -0.16, "yaw": -0.028, "roll": 0.006, "bend": -0.035}},
+      {"tick": 9, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": -0.10, "bend": 0.24}, "leftLeg": {"roll": -0.050, "pitch": 0.02, "bend": 0.50}, "rightArm": {"pitch": 0.05, "bend": -0.50}, "leftArm": {"pitch": -0.05, "bend": -0.52}, "torso": {"pitch": -0.18, "yaw": 0.0, "roll": -0.006, "bend": -0.040}},
+      {"tick": 12, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": -0.92, "bend": 0.14}, "leftLeg": {"roll": -0.050, "pitch": 0.72, "bend": 0.68}, "rightArm": {"pitch": 0.72, "bend": -0.48}, "leftArm": {"pitch": -0.62, "bend": -0.42}, "torso": {"pitch": -0.16, "yaw": 0.028, "roll": -0.006, "bend": -0.035}}
+    ]
+  }
+}

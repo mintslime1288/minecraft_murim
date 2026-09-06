@@ -1,0 +1,23 @@
+{
+  "asset_id": "murim_player_base",
+  "endpoint": "text-to-3d",
+  "request": {
+    "prompt": "A full-body young adult East Asian wuxia martial artist game character in a clean relaxed A-pose, clearly separated arms and legs, symmetrical anatomy, hands open, feet shoulder-width apart, neutral face, layered dark navy and white martial arts training robes fitted close to the body, cloth belt, simple flat-soled boots, no weapon, no cape, no long loose sleeves, no floating accessories, no base, isolated single character, front facing positive Z, realistic stylized proportions, animation-ready topology, clean silhouette",
+    "ai_model": "latest",
+    "ultra_mode": true,
+    "should_remesh": true,
+    "topology": "quad",
+    "target_polycount": 18000,
+    "symmetry_mode": "on",
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  },
+  "refine": {
+    "ai_model": "latest",
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "texture_prompt": "high quality hand-painted game texture, dark navy and ivory wuxia training robes, subtle woven cloth, brown leather-free cloth belt, simple fabric boots, clean face and hands, restrained highlights, no text, no symbols",
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  }
+}

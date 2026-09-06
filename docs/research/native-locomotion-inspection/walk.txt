@@ -1,0 +1,22 @@
+source=C:\Users\윤재영\Documents\Codex\2026-08-29\skf\minecraft_murim\assets-source\blender\murim-articulated-locomotion\murim_walk.glb
+object name='MurimRPG_Articulated_Humanoid' type=ARMATURE parent='<none>' location=(0.0, 0.0, 0.0) rotation=(0.0, 0.0, 0.0) scale=(1.0, 1.0, 1.0)
+  bones=17 actions=1
+  bone='Hips' head=(0.0, 0.0, 1.0) tail=(0.0, 0.0, 1.12)
+  bone='LeftUpLeg' head=(0.12, 0.0, 1.0) tail=(0.12, -0.0, 0.55)
+  bone='LeftLeg' head=(0.12, -0.0, 0.55) tail=(0.12, -0.0, 0.1)
+  bone='LeftFoot' head=(0.12, -0.0, 0.1) tail=(0.12, -0.433583, -0.020439)
+  bone='RightUpLeg' head=(-0.12, 0.0, 1.0) tail=(-0.12, -0.0, 0.55)
+  bone='RightLeg' head=(-0.12, -0.0, 0.55) tail=(-0.12, -0.0, 0.1)
+  bone='RightFoot' head=(-0.12, -0.0, 0.1) tail=(-0.12, -0.433583, -0.020439)
+  bone='Spine01' head=(0.0, 0.0, 1.2) tail=(0.0, 0.0, 1.45)
+  bone='Spine02' head=(0.0, 0.0, 1.45) tail=(0.0, 0.0, 1.688537)
+  bone='LeftShoulder' head=(0.2, 0.0, 1.58) tail=(0.42, 0.0, 1.58)
+  bone='LeftArm' head=(0.42, 0.0, 1.58) tail=(0.42, 0.0, 1.18)
+  bone='LeftForeArm' head=(0.42, 0.0, 1.18) tail=(0.42, 0.0, 0.84)
+  bone='LeftHand' head=(0.42, 0.0, 0.84) tail=(0.42, 0.0, 0.5)
+  bone='RightShoulder' head=(-0.2, 0.0, 1.58) tail=(-0.42, 0.0, 1.58)
+  bone='RightArm' head=(-0.42, 0.0, 1.58) tail=(-0.42, 0.0, 1.18)
+  bone='RightForeArm' head=(-0.42, 0.0, 1.18) tail=(-0.42, 0.0, 0.84)
+  bone='RightHand' head=(-0.42, 0.0, 0.84) tail=(-0.42, 0.0, 0.5)
+object name='Icosphere' type=MESH parent='<none>' location=(0.0, 0.0, 0.0) rotation=(0.0, 0.0, 0.0) scale=(1.0, 1.0, 1.0)
+  vertices=42 polygons=80

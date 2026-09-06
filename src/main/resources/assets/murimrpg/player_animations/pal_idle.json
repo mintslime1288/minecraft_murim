@@ -1,0 +1,18 @@
+{
+  "name": "pal_idle",
+  "author": "MurimRPG",
+  "description": "Subtle grounded breathing pose",
+  "emote": {
+    "isLoop": true,
+    "returnTick": 0,
+    "beginTick": 0,
+    "endTick": 40,
+    "stopTick": 41,
+    "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.018}, "leftLeg": {"roll": -0.018}, "torso": {"pitch": 0.012, "roll": -0.006, "bend": 0.018}, "head": {"pitch": -0.006}, "rightArm": {"pitch": 0.025, "bend": -0.055}, "leftArm": {"pitch": -0.020, "bend": -0.050}},
+      {"tick": 20, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.018}, "leftLeg": {"roll": -0.018}, "torso": {"pitch": -0.004, "roll": 0.006, "bend": 0.030}, "head": {"pitch": 0.004}, "rightArm": {"pitch": 0.015, "bend": -0.065}, "leftArm": {"pitch": -0.012, "bend": -0.060}},
+      {"tick": 40, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.018}, "leftLeg": {"roll": -0.018}, "torso": {"pitch": 0.012, "roll": -0.006, "bend": 0.018}, "head": {"pitch": -0.006}, "rightArm": {"pitch": 0.025, "bend": -0.055}, "leftArm": {"pitch": -0.020, "bend": -0.050}}
+    ]
+  }
+}

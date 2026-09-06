@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "displayName": "MurimRPG Launcher",
+  "minecraftVersion": "26.2",
+  "fabricLoaderVersion": "0.19.3",
+  "minimumJavaVersion": 25,
+  "minimumRamMiB": 2048,
+  "recommendedRamMiB": 4096,
+  "serverAddress": "localhost:25565",
+  "files": [
+    {
+      "id": "murimrpg-client",
+      "path": "mods/MurimRPG-Fabric-0.2.0.jar",
+      "sha256": "F5366BE672F305F0E506EF70BCBDAE90C3E12088E75B7A4C13D62823257AC1DF",
+      "downloadUrl": "REPLACE_WITH_HTTPS_RELEASE_URL",
+      "required": true
+    },
+    {
+      "id": "fabric-api",
+      "path": "mods/fabric-api-0.158.0+26.2.jar",
+      "sha256": "A4510EB2E9D4057FF20F751E420D0618598813AB9695B6F793A53C2883808DAC",
+      "downloadUrl": "REPLACE_WITH_HTTPS_RELEASE_URL",
+      "required": true
+    }
+  ]
+}

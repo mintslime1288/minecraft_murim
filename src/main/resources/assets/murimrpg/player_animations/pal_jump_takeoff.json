@@ -1,0 +1,13 @@
+{
+  "name": "pal_jump_takeoff",
+  "author": "MurimRPG",
+  "description": "Compact takeoff anticipation without root translation",
+  "emote": {
+    "isLoop": false, "returnTick": 0, "beginTick": 0, "endTick": 4, "stopTick": 5, "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEOUTQUAD", "rightLeg": {"pitch": 0.08, "bend": 0.24}, "leftLeg": {"pitch": 0.08, "bend": 0.24}, "rightArm": {"pitch": 0.10, "bend": -0.12}, "leftArm": {"pitch": 0.10, "bend": -0.12}, "torso": {"pitch": -0.05}},
+      {"tick": 2, "easing": "EASEINOUTQUAD", "rightLeg": {"pitch": 0.02, "bend": 0.36}, "leftLeg": {"pitch": 0.02, "bend": 0.36}, "rightArm": {"pitch": 0.17, "bend": -0.18}, "leftArm": {"pitch": 0.17, "bend": -0.18}, "torso": {"pitch": -0.09}},
+      {"tick": 4, "easing": "EASEOUTQUAD", "rightLeg": {"pitch": -0.10, "bend": 0.12}, "leftLeg": {"pitch": 0.10, "bend": 0.16}, "rightArm": {"pitch": -0.10, "bend": -0.12}, "leftArm": {"pitch": -0.10, "bend": -0.12}, "torso": {"pitch": -0.06}}
+    ]
+  }
+}

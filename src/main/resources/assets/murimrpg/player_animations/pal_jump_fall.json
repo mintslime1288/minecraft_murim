@@ -1,0 +1,12 @@
+{
+  "name": "pal_jump_fall",
+  "author": "MurimRPG",
+  "description": "Controlled landing preparation without root translation",
+  "emote": {
+    "isLoop": false, "returnTick": 0, "beginTick": 0, "endTick": 5, "stopTick": 6, "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEOUTQUAD", "rightLeg": {"pitch": 0.05, "bend": 0.20}, "leftLeg": {"pitch": 0.10, "bend": 0.22}, "rightArm": {"pitch": -0.04, "roll": 0.10, "bend": -0.15}, "leftArm": {"pitch": -0.04, "roll": -0.10, "bend": -0.15}, "torso": {"pitch": -0.02}},
+      {"tick": 5, "easing": "EASEINOUTSINE", "rightLeg": {"pitch": 0.11, "bend": 0.27}, "leftLeg": {"pitch": 0.11, "bend": 0.27}, "rightArm": {"pitch": -0.02, "roll": 0.12, "bend": -0.18}, "leftArm": {"pitch": -0.02, "roll": -0.12, "bend": -0.18}, "torso": {"pitch": -0.035}}
+    ]
+  }
+}

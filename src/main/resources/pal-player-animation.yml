@@ -1,0 +1,26 @@
+# Player Animation Library drives layered motion; Bendable Cuboids bends the
+# original Minecraft skin mesh at elbows and knees. No GLB body is rendered.
+# Stable baseline: enable only after the motion set passes manual F5 review.
+enabled: false
+local-player-only: false
+third-party-provider:
+  # Keep MurimRPG's licensed PAL+Bendable Cuboids skin-joint motions as the default.
+  # Set this to true only when the user deliberately wants CPA to own every player pose.
+  # A restart is required after changing this setting.
+  prefer-when-installed: false
+  mod-id: cpa
+movement:
+  moving-threshold: 0.008
+  fast-run-threshold: 0.13
+airborne:
+  rise-velocity-threshold: 0.035
+  apex-velocity-threshold: 0.035
+  takeoff-duration-ticks: 3
+  landing-duration-ticks: 5
+transitions:
+  locomotion-fade-ticks: 3
+  airborne-fade-ticks: 2
+  landing-fade-ticks: 3
+layers:
+  locomotion-priority: 200
+  combat-priority: 400

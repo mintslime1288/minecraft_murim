@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.murimrpg.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["PlayerModelMixin", "TrainingDummyArmorStandMixin", "LivingEntityRendererMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

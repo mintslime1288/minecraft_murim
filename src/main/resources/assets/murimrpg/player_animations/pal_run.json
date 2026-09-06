@@ -1,0 +1,20 @@
+{
+  "name": "pal_run",
+  "author": "MurimRPG",
+  "description": "Athletic run with controlled torso lean and joint absorption",
+  "emote": {
+    "isLoop": true,
+    "returnTick": 0,
+    "beginTick": 0,
+    "endTick": 16,
+    "stopTick": 17,
+    "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.040, "pitch": -0.72, "bend": 0.10}, "leftLeg": {"roll": -0.040, "pitch": 0.58, "bend": 0.52}, "rightArm": {"pitch": 0.56, "bend": -0.36}, "leftArm": {"pitch": -0.50, "bend": -0.30}, "torso": {"pitch": -0.10, "yaw": 0.022, "roll": -0.005, "bend": -0.025}},
+      {"tick": 4, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.040, "pitch": 0.02, "bend": 0.38}, "leftLeg": {"roll": -0.040, "pitch": -0.06, "bend": 0.18}, "rightArm": {"pitch": -0.035, "bend": -0.38}, "leftArm": {"pitch": 0.035, "bend": -0.36}, "torso": {"pitch": -0.11, "yaw": 0.0, "roll": 0.005, "bend": -0.028}},
+      {"tick": 8, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.040, "pitch": 0.58, "bend": 0.52}, "leftLeg": {"roll": -0.040, "pitch": -0.72, "bend": 0.10}, "rightArm": {"pitch": -0.50, "bend": -0.30}, "leftArm": {"pitch": 0.56, "bend": -0.36}, "torso": {"pitch": -0.10, "yaw": -0.022, "roll": 0.005, "bend": -0.025}},
+      {"tick": 12, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.040, "pitch": -0.06, "bend": 0.18}, "leftLeg": {"roll": -0.040, "pitch": 0.02, "bend": 0.38}, "rightArm": {"pitch": 0.035, "bend": -0.36}, "leftArm": {"pitch": -0.035, "bend": -0.38}, "torso": {"pitch": -0.11, "yaw": 0.0, "roll": -0.005, "bend": -0.028}},
+      {"tick": 16, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.040, "pitch": -0.72, "bend": 0.10}, "leftLeg": {"roll": -0.040, "pitch": 0.58, "bend": 0.52}, "rightArm": {"pitch": 0.56, "bend": -0.36}, "leftArm": {"pitch": -0.50, "bend": -0.30}, "torso": {"pitch": -0.10, "yaw": 0.022, "roll": -0.005, "bend": -0.025}}
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "asset_id": "training_dummy_log_pillar_clean",
+  "endpoint": "text-to-3d",
+  "request": {
+    "prompt": "A single upright martial arts training log pillar, a smooth and continuous tapered octagonal hardwood cylinder with natural vertical wood grain and subtle bark seams, visible tree rings only on the top and bottom end caps, no target, no circle, no emblem, no panel, no carving, no knot ornament, no separate attached geometry, no arms, no head, no ropes, no base, isolated object, clean uninterrupted silhouette, high-quality game-ready topology",
+    "ai_model": "latest",
+    "ultra_mode": true,
+    "should_remesh": false,
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  },
+  "refine": {
+    "ai_model": "latest",
+    "enable_pbr": true,
+    "texture_resolution": "2k",
+    "texture_prompt": "continuous dark walnut wood surface, uninterrupted vertical grain around the entire pillar, soft worn edges, natural bark seams only, no circle, no target, no decoration, no metal, no rope, physically based wood texture",
+    "alpha_thumbnail": true,
+    "target_formats": ["glb"]
+  }
+}

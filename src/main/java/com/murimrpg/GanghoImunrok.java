@@ -1,12 +1,14 @@
 package com.murimrpg;
 
 import com.murimrpg.command.CommandRegistry;
+import com.murimrpg.block.MurimBlocks;
 import com.murimrpg.config.ModResources;
 import com.murimrpg.data.LegacyPlayerDataMigrator;
 import com.murimrpg.cultivation.MeditationController;
 import com.murimrpg.domain.ContentCatalog;
 import com.murimrpg.domain.CultivationProgression;
 import com.murimrpg.event.EventRegistry;
+import com.murimrpg.network.MurimRpgNetworking;
 import com.murimrpg.infrastructure.config.ContentConfigLoader;
 import com.murimrpg.infrastructure.config.CultivationConfigLoader;
 import com.murimrpg.infrastructure.sqlite.SqlitePlayerRepository;
@@ -19,6 +21,17 @@ import com.murimrpg.service.MeditationService;
 import com.murimrpg.service.PlayerContentService;
 import com.murimrpg.service.PlayerProfileService;
 import com.murimrpg.service.ProgressionService;
+import com.murimrpg.service.InventoryCurrencyService;
+import com.murimrpg.service.TrainingItemService;
+import com.murimrpg.service.TrainingDummyCollisionService;
+import com.murimrpg.domain.CurrencyCatalog;
+import com.murimrpg.infrastructure.config.CurrencyConfigLoader;
+import com.murimrpg.infrastructure.config.EffectConfigLoader;
+import com.murimrpg.domain.EffectCatalog;
+import com.murimrpg.service.VisualEffectService;
+import com.murimrpg.service.InteractiveMenuService;
+import com.murimrpg.infrastructure.config.MenuConfigLoader;
+import com.murimrpg.domain.MenuSettings;
 import com.murimrpg.ui.FabricUiManager;
 import com.murimrpg.ui.UiSettings;
 import java.io.IOException;
@@ -31,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -43,7 +57,15 @@ public final class GanghoImunrok implements ModInitializer {
     private PlayerContentService content;
 
     @Override public void onInitialize() {
+        MurimBlocks.register();
+        // Fabric invokes the common entrypoint in a client as well. The server owns
+        // persistence, commands and YAML; the client entrypoint owns visual packets.
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            logger.info("MurimRPG client detected: skipping server-only initialization.");
+            return;
+        }
         try {
+            MurimRpgNetworking.registerPayloadTypes();
             Path directory = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID);
             new LegacyPlayerDataMigrator().migrate(
                     FabricLoader.getInstance().getGameDir().resolve("plugins").resolve("MurimRPG"), directory, logger);
@@ -52,6 +74,9 @@ public final class GanghoImunrok implements ModInitializer {
             ContentCatalog catalog = new ContentConfigLoader().load(directory.resolve("factions.yml"), directory.resolve("sects.yml"),
                     directory.resolve("ranks.yml"), directory.resolve("skills.yml"), directory.resolve("monsters.yml"),
                     directory.resolve("quests.yml"), progression);
+            CurrencyCatalog currencies = new CurrencyConfigLoader().load(directory.resolve("currencies.yml"));
+            EffectCatalog effects = new EffectConfigLoader().load(directory.resolve("effects.yml"));
+            MenuSettings menuSettings = new MenuConfigLoader().load(directory.resolve("menu.yml"));
             ExecutorService databaseExecutor = Executors.newSingleThreadExecutor(task -> {
                 Thread thread = new Thread(task, "MurimRPG-Database"); thread.setDaemon(false); return thread;
             });
@@ -67,11 +92,14 @@ public final class GanghoImunrok implements ModInitializer {
                     new MeditationService(huashan), catalog.huashanSettings(), scheduler);
             FabricUiManager ui = new FabricUiManager(UiSettings.load(directory.resolve("ui.yml")), profiles,
                     content, catalog, progression, scheduler);
+            TrainingDummyCollisionService dummyCollision = new TrainingDummyCollisionService();
             GanghoContext context = new GanghoContext(profiles, content, progressionService, progression, catalog,
-                    huashan, characters, scheduler, meditation, ui);
+                    huashan, characters, scheduler, meditation, ui, new InventoryCurrencyService(currencies),
+                    new TrainingItemService(), dummyCollision, new VisualEffectService(effects), new InteractiveMenuService(menuSettings));
             profiles.initialize().join();
             new CommandRegistry(context).register();
             new EventRegistry(context, logger).register();
+            dummyCollision.register();
             scheduler.register();
             ui.register();
             ServerLifecycleEvents.SERVER_STOPPING.register(server -> shutdown());

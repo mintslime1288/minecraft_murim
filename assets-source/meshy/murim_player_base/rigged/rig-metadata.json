@@ -1,0 +1,31 @@
+﻿{
+    "asset_id":  "murim_player_base",
+    "source_tool":  "Meshy Rigging API",
+    "input_task_id":  "01a06f22-4dc6-74fd-ab31-1335c258b22c",
+    "rigging_task_id":  "01a06f24-1a34-7498-a43d-2433a8fab19b",
+    "consumed_credits":  5,
+    "downloaded_at_utc":  "2026-09-05T01:18:10.2814024Z",
+    "license_status":  "REVIEW_REQUIRED",
+    "files":  [
+                  {
+                      "name":  "character.glb",
+                      "size_bytes":  6431544,
+                      "sha256":  "8CF2AAEB7490EE48FEEBA3DD999C5628C26BA17B7FDCABD52DD7B1967E4E2FB8"
+                  },
+                  {
+                      "name":  "walking.glb",
+                      "size_bytes":  6444324,
+                      "sha256":  "11AAC5AF6A092B31AE2F9DBF5A3C7A2B9054B42B614EF277F8BA97843306334A"
+                  },
+                  {
+                      "name":  "walking-armature.glb",
+                      "size_bytes":  65236,
+                      "sha256":  "42A5E05435F6FAAB7F6E8C009FE9C5C0CA3896570E788DFB7E57DF0D7DC7F6D7"
+                  },
+                  {
+                      "name":  "running.glb",
+                      "size_bytes":  6439712,
+                      "sha256":  "CB751E7632DE9472DF0787AC66A20A0510D9210867CFB2EBCD5449155A1EEA10"
+                  }
+              ]
+}

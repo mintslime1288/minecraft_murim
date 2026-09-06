@@ -1,0 +1,20 @@
+{
+  "asset_id": "training_dummy_log_pillar",
+  "source_tool": "Meshy",
+  "generation_workflow": "text-to-3d-v2-preview-and-refine",
+  "preview_task_id": "01a066d2-ec1a-77d8-b69b-7d1895e7e01d",
+  "refine_task_id": "01a066d4-cc1a-777c-96e8-ac60eff0b80c",
+  "model_file": "model.glb",
+  "model_size_bytes": 115113324,
+  "sha256": "ECA87739185FFB2199632A39335CA2DB295BAD4266A089FF3E26216A166C134A",
+  "optimized_model_file": "model-optimized.glb",
+  "optimized_model_size_bytes": 12365548,
+  "optimized_model_sha256": "B0BC79B214010146DA4206CC7A74CA9632B73FE3CF10CA530FD905AD543C0A93",
+  "remesh_task_id": "01a066da-add0-754b-bf13-593494e85082",
+  "remesh_target_polycount": 8000,
+  "remesh_consumed_credits": 5,
+  "license_status": "REVIEW_REQUIRED",
+  "optimization_status": "DERIVATIVE_READY_FOR_RENDERER_PROTOTYPE",
+  "visual_review": "Wood grain and target are usable as a concept. The silhouette is too rectangular for the intended octagonal log pillar.",
+  "next_step": "Register the optimized derivative in the dedicated Fabric client renderer only after a custom GLB renderer is implemented and the Meshy license has been reviewed."
+}

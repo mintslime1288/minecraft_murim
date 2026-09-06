@@ -1,0 +1,16 @@
+# Keep the user's Minecraft skin, armour and held items visible by default. Set this to true
+# only when deliberately testing the separate Meshy body replacement renderer.
+enabled: false
+scale:
+  width: 1.0
+  height: 1.0
+  depth: 1.0
+coordinate-correction:
+  # Minecraft humanoid model space is Y-down while the rebaked GLB is Y-up.
+  flip-vertical: true
+  # Meshy's forward axis is the reverse of Minecraft's avatar forward axis.
+  yaw-degrees: 180
+  ground-offset: 1.501
+animation:
+  # WALK and RUN are blended only while their compatible GLB clips are active.
+  locomotion-blend-seconds: 0.20

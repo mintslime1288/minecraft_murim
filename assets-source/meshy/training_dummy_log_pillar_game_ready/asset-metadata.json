@@ -1,0 +1,14 @@
+{
+  "asset_id": "training_dummy_log_pillar_game_ready",
+  "meshy_task_id": "01a06c5c-007c-7723-9917-d6512ea4f925",
+  "meshy_endpoint": "image-to-3d",
+  "source_tool": "Meshy Smart Topology",
+  "target_polycount": 1800,
+  "actual_triangles": 1878,
+  "texture_resolution": "2k",
+  "license_status": "REVIEW_REQUIRED",
+  "model_file": "model.glb",
+  "thumbnail_file": "preview.png",
+  "sha256": "15CD6D25F573A3C63CEE9E883E4D618E99F669135A68C02B8818309511AAA9B2",
+  "purpose": "MurimRPG local test client training-log dummy; optimized replacement for the 8,830-triangle source asset"
+}

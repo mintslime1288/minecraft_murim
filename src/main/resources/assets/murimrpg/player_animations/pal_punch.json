@@ -1,0 +1,20 @@
+{
+  "name": "pal_punch",
+  "author": "MurimRPG",
+  "description": "Compact unarmed strike with shoulder and hip follow-through",
+  "emote": {
+    "isLoop": false,
+    "returnTick": 0,
+    "beginTick": 0,
+    "endTick": 9,
+    "stopTick": 10,
+    "degrees": false,
+    "moves": [
+      {"tick": 0, "easing": "EASEOUTQUAD", "rightArm": {"pitch": 0.12, "yaw": -0.10, "bend": -0.42}, "leftArm": {"pitch": -0.08, "yaw": 0.18, "bend": -0.48}, "torso": {"pitch": 0.025, "yaw": -0.05, "bend": 0.04}},
+      {"tick": 2, "easing": "EASEINQUAD", "rightArm": {"pitch": -0.35, "yaw": -0.20, "bend": -0.78}, "leftArm": {"pitch": -0.22, "yaw": 0.25, "bend": -0.58}, "torso": {"pitch": 0.08, "yaw": -0.16, "bend": 0.09}},
+      {"tick": 4, "easing": "EASEOUTQUAD", "rightArm": {"pitch": -1.34, "yaw": -0.05, "bend": -0.08}, "leftArm": {"pitch": -0.40, "yaw": 0.28, "bend": -0.62}, "torso": {"pitch": 0.10, "yaw": 0.17, "bend": 0.11}},
+      {"tick": 6, "easing": "EASEINOUTQUAD", "rightArm": {"pitch": -0.62, "yaw": -0.08, "bend": -0.32}, "leftArm": {"pitch": -0.22, "yaw": 0.20, "bend": -0.52}, "torso": {"pitch": 0.055, "yaw": 0.06, "bend": 0.07}},
+      {"tick": 9, "easing": "EASEINOUTSINE", "rightArm": {"pitch": 0.0, "yaw": 0.0, "bend": 0.0}, "leftArm": {"pitch": 0.0, "yaw": 0.0, "bend": 0.0}, "torso": {"pitch": 0.0, "yaw": 0.0, "bend": 0.0}}
+    ]
+  }
+}
