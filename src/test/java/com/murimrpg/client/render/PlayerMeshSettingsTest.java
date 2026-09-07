@@ -5,6 +5,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlayerMeshSettingsTest {
+    @Test void defaultsToDisabledWhenTheOptInKeyIsMissing() throws Exception {
+        var directory = Files.createTempDirectory("murim-player-model-default");
+        Files.writeString(directory.resolve("player-model.yml"), "{}\n");
+        assertFalse(PlayerMeshSettings.load(directory).enabled());
+    }
+
     @Test void loadsValidatedBlockSpaceMeshDimensions() throws Exception {
         var directory = Files.createTempDirectory("murim-player-model");
         Files.copy(getClass().getResourceAsStream("/player-model.yml"), directory.resolve("player-model.yml"));

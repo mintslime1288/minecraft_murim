@@ -18,6 +18,10 @@ import org.joml.Quaternionf;
  * sampling the currently selected player's own Minecraft skin texture.
  */
 public final class ArticulatedPlayerRenderer {
+    // This pre-ModelPart custom-geometry renderer uses a separate coordinate-space
+    // transform.  Keep it unreachable: the validated ModelPart path owns the only
+    // supported articulated local-player rendering, and unsupported poses use vanilla.
+    private static final boolean LEGACY_CUSTOM_GEOMETRY_ENABLED = false;
     private static ArticulatedPlayerSettings settings;
     private static boolean loaded;
     private ArticulatedPlayerRenderer() { }
@@ -28,6 +32,7 @@ public final class ArticulatedPlayerRenderer {
     }
 
     public static boolean shouldReplace(AvatarRenderState state) {
+        if (!LEGACY_CUSTOM_GEOMETRY_ENABLED) return false;
         var client = Minecraft.getInstance();
         var player = client.player;
         if (!loaded || !NaturalWalkDiagnostics.enabled() || player == null || state.id != player.getId()) return false;

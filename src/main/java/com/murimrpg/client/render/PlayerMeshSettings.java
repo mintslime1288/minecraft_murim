@@ -22,7 +22,9 @@ record PlayerMeshSettings(boolean enabled, float widthScale, float heightScale, 
             throw new IllegalStateException("Could not load player-model.yml", error);
         }
         var yaml = YamlDocument.load(file);
-        return new PlayerMeshSettings(bool(yaml, "enabled", true), value(yaml, "scale.width", 1f),
+        // Full GLB player rendering is experimental and must require an explicit opt-in.
+        // A missing or malformed enabled key must retain vanilla rendering.
+        return new PlayerMeshSettings(bool(yaml, "enabled", false), value(yaml, "scale.width", 1f),
                 value(yaml, "scale.height", 1f), value(yaml, "scale.depth", 1f),
                 bool(yaml, "coordinate-correction.flip-vertical", true),
                 value(yaml, "coordinate-correction.yaw-degrees", 180f),
