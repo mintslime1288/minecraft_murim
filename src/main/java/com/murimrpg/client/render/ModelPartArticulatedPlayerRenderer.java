@@ -9,11 +9,13 @@ import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.Identifier;
 
 /** Safe native-model pipeline for the articulated local-player body. */
 public final class ModelPartArticulatedPlayerRenderer {
     private static ArticulatedHumanoidModel model;
     private static AuthoredRigWalkAnimation walkAnimation;
+    private static AuthoredRigWalkAnimation runAnimation;
     private static ArticulatedPlayerSettings settings;
     private static boolean active;
     private static boolean loggedSubmit;
@@ -24,18 +26,21 @@ public final class ModelPartArticulatedPlayerRenderer {
         loggedFallback = false;
         try {
             settings = ArticulatedPlayerSettings.load(FabricLoader.getInstance().getConfigDir().resolve("murimrpg"));
-            walkAnimation = AuthoredRigWalkAnimation.load(client);
+            walkAnimation = AuthoredRigWalkAnimation.load(client,
+                    Identifier.fromNamespaceAndPath("murimrpg", "player_motion/murim_walk.json"), "walk");
+            runAnimation = AuthoredRigWalkAnimation.load(client,
+                    Identifier.fromNamespaceAndPath("murimrpg", "player_motion/murim_run.json"), "run");
             active = settings.enabled();
-            model = active ? new ArticulatedHumanoidModel(settings, walkAnimation) : null;
+            model = active ? new ArticulatedHumanoidModel(settings, walkAnimation, runAnimation) : null;
         } catch (Exception error) {
-            active = false; model = null;
-            org.slf4j.LoggerFactory.getLogger("MurimRPG-Articulated").warn("Authored Blender walk unavailable; vanilla fallback remains active", error);
+            active = false; model = null; walkAnimation = null; runAnimation = null;
+            org.slf4j.LoggerFactory.getLogger("MurimRPG-Articulated").warn("Authored Blender locomotion unavailable; vanilla fallback remains active", error);
         }
     }
     public static boolean shouldReplace(AvatarRenderState state) {
         var player = Minecraft.getInstance().player;
         return active && model != null && player != null && state.id == player.getId()
-                && !player.isSprinting() && !state.isCrouching && !state.isFallFlying && !state.isVisuallySwimming && !state.isPassenger
+                && player.onGround() && !state.isCrouching && !state.isFallFlying && !state.isVisuallySwimming && !state.isPassenger
                 && !state.isUsingItem && state.attackTime <= .01f && state.deathTime == 0
                 && state.headEquipment.isEmpty() && state.chestEquipment.isEmpty() && state.legsEquipment.isEmpty() && state.feetEquipment.isEmpty();
     }

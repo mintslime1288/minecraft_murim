@@ -19,16 +19,19 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
     private final ModelPart rightUpperLeg, leftUpperLeg, rightLowerLeg, leftLowerLeg;
     private final ArticulatedPlayerSettings settings;
     private final AuthoredRigWalkAnimation walkAnimation;
+    private final AuthoredRigWalkAnimation runAnimation;
     private boolean running;
     private boolean fastRunning;
     /** Hard ceiling regardless of YAML; a joint past this is a retarget failure, not a pose. */
     private static final float MAX_SAFE_RADIANS = 1.6f;
     private boolean poseValid;
 
-    ArticulatedHumanoidModel(ArticulatedPlayerSettings settings, AuthoredRigWalkAnimation walkAnimation) {
+    ArticulatedHumanoidModel(ArticulatedPlayerSettings settings, AuthoredRigWalkAnimation walkAnimation,
+                             AuthoredRigWalkAnimation runAnimation) {
         super(createBodyLayer().bakeRoot(), RenderTypes::entityCutout);
         this.settings = settings;
         this.walkAnimation = walkAnimation;
+        this.runAnimation = runAnimation;
         head = root.getChild("head"); body = root.getChild("body");
         rightUpperArm = root.getChild("right_upper_arm"); leftUpperArm = root.getChild("left_upper_arm");
         rightLowerArm = rightUpperArm.getChild("right_lower_arm"); leftLowerArm = leftUpperArm.getChild("left_lower_arm");
@@ -74,7 +77,7 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
             poseValid = false;
             return;
         }
-        var authored = walkAnimation.sample(phase).scaled(speed);
+        var authored = (running ? runAnimation : walkAnimation).sample(phase).scaled(speed);
         float strideLimit = radians(running ? settings.runStrideDegrees() : settings.walkStrideDegrees());
         float kneeLimit = radians(running ? settings.runKneeDegrees() : settings.walkKneeDegrees());
         float elbowLimit = radians(running ? settings.runElbowDegrees() : settings.walkElbowDegrees());
