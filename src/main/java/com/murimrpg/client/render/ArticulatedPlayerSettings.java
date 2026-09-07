@@ -13,7 +13,7 @@ record ArticulatedPlayerSettings(boolean enabled, float walkStrideDegrees, float
                                  float fastRunHorizontalSpeed, float limbSwingScale, float jumpStrideDegrees,
                                  float jumpKneeDegrees, float jumpElbowDegrees, float jumpBodyDegrees,
                                  float jumpRiseVelocityThreshold, float jumpApexVelocityThreshold,
-                                 int jumpLandingDurationTicks, boolean logOnce) {
+                                 int jumpLandingDurationTicks, int jumpMinimumAirborneTicks, boolean logOnce) {
     static ArticulatedPlayerSettings load(Path directory) {
         Path file = directory.resolve("articulated-player.yml");
         try {
@@ -36,8 +36,8 @@ record ArticulatedPlayerSettings(boolean enabled, float walkStrideDegrees, float
                 scale(yaml, "walk.limb-swing-scale", .6662f), degree(yaml, "jump.stride-degrees", 28f),
                 degree(yaml, "jump.knee-degrees", 34f), degree(yaml, "jump.elbow-degrees", 18f),
                 degree(yaml, "jump.body-degrees", 12f), speed(yaml, "jump.rise-velocity-threshold", .035f),
-                speed(yaml, "jump.apex-velocity-threshold", .035f), ticks(yaml, "jump.landing-duration-ticks", 3),
-                bool(yaml, "diagnostics.log-once", false));
+                speed(yaml, "jump.apex-velocity-threshold", .035f), ticks(yaml, "jump.landing-duration-ticks", 5),
+                ticks(yaml, "jump.minimum-airborne-ticks", 3), bool(yaml, "diagnostics.log-once", false));
     }
 
     private static boolean bool(YamlDocument yaml, String path, boolean fallback) {

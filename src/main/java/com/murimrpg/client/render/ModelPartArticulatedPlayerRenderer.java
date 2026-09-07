@@ -57,9 +57,9 @@ public final class ModelPartArticulatedPlayerRenderer {
         double horizontalSpeed = player == null ? 0d : Math.sqrt(player.getDeltaMovement().x * player.getDeltaMovement().x
                 + player.getDeltaMovement().z * player.getDeltaMovement().z);
         boolean running = player != null && player.isSprinting();
-        var jumpPhase = jumpPhase(player);
+        var jumpPhase = jumpPhase(player, state.ageInTicks);
         model.setLocomotion(running, running && horizontalSpeed >= settings.fastRunHorizontalSpeed());
-        model.setJumpPhase(jumpPhase);
+        model.setJumpPhase(jumpPhase, JUMP_TRACKER.landingProgress());
         model.setupAnim(state);
         if (!model.poseValid()) {
             logOnce(false, "관절 포즈 검증 실패(비유한값/범위 초과). 바닐라 모델로 폴백");
@@ -79,9 +79,10 @@ public final class ModelPartArticulatedPlayerRenderer {
     }
     public static String status() { return active ? "활성(ModelPart 관절 리그)" : "설정에서 꺼짐"; }
 
-    private static ArticulatedJumpTracker.Phase jumpPhase(net.minecraft.client.player.LocalPlayer player) {
-        if (player == null || settings == null || player.level() == null) return ArticulatedJumpTracker.Phase.GROUND;
-        return JUMP_TRACKER.update(player.level().getGameTime(), player.onGround(), player.getDeltaMovement().y,
-                settings.jumpRiseVelocityThreshold(), settings.jumpApexVelocityThreshold(), settings.jumpLandingDurationTicks());
+    private static ArticulatedJumpTracker.Phase jumpPhase(net.minecraft.client.player.LocalPlayer player, float ageInTicks) {
+        if (player == null || settings == null) return ArticulatedJumpTracker.Phase.GROUND;
+        return JUMP_TRACKER.update(ageInTicks, player.onGround(), player.getDeltaMovement().y,
+                settings.jumpRiseVelocityThreshold(), settings.jumpApexVelocityThreshold(),
+                settings.jumpLandingDurationTicks(), settings.jumpMinimumAirborneTicks());
     }
 }

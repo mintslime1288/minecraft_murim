@@ -19,12 +19,17 @@ run:
 jump:
   # Rotation safety limits for the authored takeoff/rise/apex/fall/landing poses.
   stride-degrees: 28.0
-  knee-degrees: 34.0
+  # 27 degrees in the authored LAND pose becomes 36.45 after lower-leg gain 1.35.
+  # Keeping this above that value preserves the intended distinction from APEX.
+  knee-degrees: 37.0
   elbow-degrees: 18.0
   body-degrees: 12.0
   rise-velocity-threshold: 0.035
   apex-velocity-threshold: 0.035
-  landing-duration-ticks: 3
+  # LAND releases into the live walk/run pose progressively across this window.
+  landing-duration-ticks: 5
+  # Short step-offs from slabs/stairs are not jump landings.
+  minimum-airborne-ticks: 3
 retarget:
   # Meshy Humanoid local rotations converted into Minecraft ModelPart rotations.
   upper-leg-gain: 1.20

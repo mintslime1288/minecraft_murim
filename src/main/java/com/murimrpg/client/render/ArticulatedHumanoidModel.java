@@ -25,6 +25,7 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
     private boolean running;
     private boolean fastRunning;
     private ArticulatedJumpTracker.Phase jumpPhase = ArticulatedJumpTracker.Phase.GROUND;
+    private float landingProgress;
     /** Hard ceiling regardless of YAML; a joint past this is a retarget failure, not a pose. */
     private static final float MAX_SAFE_RADIANS = 1.6f;
     private boolean poseValid;
@@ -48,8 +49,9 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
         this.fastRunning = fastRunning;
     }
 
-    void setJumpPhase(ArticulatedJumpTracker.Phase jumpPhase) {
+    void setJumpPhase(ArticulatedJumpTracker.Phase jumpPhase, float landingProgress) {
         this.jumpPhase = jumpPhase;
+        this.landingProgress = Float.isFinite(landingProgress) ? Math.clamp(landingProgress, 0f, 1f) : 0f;
     }
 
     static LayerDefinition createBodyLayer() {
@@ -86,15 +88,28 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
             return;
         }
         if (jumpPhase != ArticulatedJumpTracker.Phase.GROUND) {
-            applyJumpPose(jumpAnimation.sampleFrame(switch (jumpPhase) {
+            int frame = switch (jumpPhase) {
                 case RISE -> 1;
                 case APEX -> 2;
                 case FALL -> 3;
                 case LAND -> 4;
                 case GROUND -> 0;
-            }));
+            };
+            if (jumpPhase == ArticulatedJumpTracker.Phase.LAND) {
+                // Impact is immediate; only recovery eases back toward the live gait.
+                applyLocomotionPose(phase, speed);
+                float[] recovered = snapshot();
+                applyJumpPose(jumpAnimation.sampleFrame(frame));
+                blendToward(recovered, smoothstep(landingProgress));
+            } else {
+                applyJumpPose(jumpAnimation.sampleFrame(frame));
+            }
             return;
         }
+        applyLocomotionPose(phase, speed);
+    }
+
+    private void applyLocomotionPose(float phase, float speed) {
         var authored = (running ? runAnimation : walkAnimation).sample(phase).scaled(speed);
         float strideLimit = radians(running ? settings.runStrideDegrees() : settings.walkStrideDegrees());
         float kneeLimit = radians(running ? settings.runKneeDegrees() : settings.walkKneeDegrees());
@@ -111,6 +126,41 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
         body.xRot = limited(authored.body().x, 1f, bodyLimit);
         body.yRot = limited(authored.body().y, 1f, bodyLimit);
         body.zRot = limited(authored.body().z, 1f, bodyLimit);
+    }
+
+    /** Captures the eleven driven joints so LAND can recover into the live gait. */
+    private float[] snapshot() {
+        return new float[] { rightUpperLeg.xRot, leftUpperLeg.xRot, rightLowerLeg.xRot, leftLowerLeg.xRot,
+                rightUpperArm.xRot, leftUpperArm.xRot, rightLowerArm.xRot, leftLowerArm.xRot,
+                body.xRot, body.yRot, body.zRot };
+    }
+
+    private void blendToward(float[] target, float amount) {
+        rightUpperLeg.xRot = lerp(rightUpperLeg.xRot, target[0], amount);
+        leftUpperLeg.xRot = lerp(leftUpperLeg.xRot, target[1], amount);
+        rightLowerLeg.xRot = lerp(rightLowerLeg.xRot, target[2], amount);
+        leftLowerLeg.xRot = lerp(leftLowerLeg.xRot, target[3], amount);
+        rightUpperArm.xRot = lerp(rightUpperArm.xRot, target[4], amount);
+        leftUpperArm.xRot = lerp(leftUpperArm.xRot, target[5], amount);
+        rightLowerArm.xRot = lerp(rightLowerArm.xRot, target[6], amount);
+        leftLowerArm.xRot = lerp(leftLowerArm.xRot, target[7], amount);
+        body.xRot = lerp(body.xRot, target[8], amount);
+        body.yRot = lerp(body.yRot, target[9], amount);
+        body.zRot = lerp(body.zRot, target[10], amount);
+    }
+
+    private float lerp(float from, float to, float amount) {
+        float result = from + (to - from) * amount;
+        if (!Float.isFinite(result) || Math.abs(result) > MAX_SAFE_RADIANS) {
+            poseValid = false;
+            return 0f;
+        }
+        return result;
+    }
+
+    private static float smoothstep(float amount) {
+        float value = Math.clamp(amount, 0f, 1f);
+        return value * value * (3f - 2f * value);
     }
 
     private void applyJumpPose(MeshyWalkAnimation.Pose authored) {
