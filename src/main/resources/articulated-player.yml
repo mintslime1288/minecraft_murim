@@ -16,6 +16,15 @@ run:
   stride-degrees: 42.0
   knee-degrees: 38.0
   elbow-degrees: 26.0
+jump:
+  # Rotation safety limits for the authored takeoff/rise/apex/fall/landing poses.
+  stride-degrees: 28.0
+  knee-degrees: 34.0
+  elbow-degrees: 18.0
+  body-degrees: 12.0
+  rise-velocity-threshold: 0.035
+  apex-velocity-threshold: 0.035
+  landing-duration-ticks: 3
 retarget:
   # Meshy Humanoid local rotations converted into Minecraft ModelPart rotations.
   upper-leg-gain: 1.20

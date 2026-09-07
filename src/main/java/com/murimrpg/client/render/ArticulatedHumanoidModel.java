@@ -1,5 +1,6 @@
 package com.murimrpg.client.render;
 
+import com.murimrpg.client.MeshyWalkAnimation;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -20,18 +21,21 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
     private final ArticulatedPlayerSettings settings;
     private final AuthoredRigWalkAnimation walkAnimation;
     private final AuthoredRigWalkAnimation runAnimation;
+    private final AuthoredRigWalkAnimation jumpAnimation;
     private boolean running;
     private boolean fastRunning;
+    private ArticulatedJumpTracker.Phase jumpPhase = ArticulatedJumpTracker.Phase.GROUND;
     /** Hard ceiling regardless of YAML; a joint past this is a retarget failure, not a pose. */
     private static final float MAX_SAFE_RADIANS = 1.6f;
     private boolean poseValid;
 
     ArticulatedHumanoidModel(ArticulatedPlayerSettings settings, AuthoredRigWalkAnimation walkAnimation,
-                             AuthoredRigWalkAnimation runAnimation) {
+                             AuthoredRigWalkAnimation runAnimation, AuthoredRigWalkAnimation jumpAnimation) {
         super(createBodyLayer().bakeRoot(), RenderTypes::entityCutout);
         this.settings = settings;
         this.walkAnimation = walkAnimation;
         this.runAnimation = runAnimation;
+        this.jumpAnimation = jumpAnimation;
         head = root.getChild("head"); body = root.getChild("body");
         rightUpperArm = root.getChild("right_upper_arm"); leftUpperArm = root.getChild("left_upper_arm");
         rightLowerArm = rightUpperArm.getChild("right_lower_arm"); leftLowerArm = leftUpperArm.getChild("left_lower_arm");
@@ -42,6 +46,10 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
     void setLocomotion(boolean running, boolean fastRunning) {
         this.running = running;
         this.fastRunning = fastRunning;
+    }
+
+    void setJumpPhase(ArticulatedJumpTracker.Phase jumpPhase) {
+        this.jumpPhase = jumpPhase;
     }
 
     static LayerDefinition createBodyLayer() {
@@ -77,11 +85,39 @@ final class ArticulatedHumanoidModel extends Model<AvatarRenderState> {
             poseValid = false;
             return;
         }
+        if (jumpPhase != ArticulatedJumpTracker.Phase.GROUND) {
+            applyJumpPose(jumpAnimation.sampleFrame(switch (jumpPhase) {
+                case RISE -> 1;
+                case APEX -> 2;
+                case FALL -> 3;
+                case LAND -> 4;
+                case GROUND -> 0;
+            }));
+            return;
+        }
         var authored = (running ? runAnimation : walkAnimation).sample(phase).scaled(speed);
         float strideLimit = radians(running ? settings.runStrideDegrees() : settings.walkStrideDegrees());
         float kneeLimit = radians(running ? settings.runKneeDegrees() : settings.walkKneeDegrees());
         float elbowLimit = radians(running ? settings.runElbowDegrees() : settings.walkElbowDegrees());
         float bodyLimit = radians(settings.bodyTurnDegrees());
+        rightUpperLeg.xRot = limited(authored.rightLeg().x, settings.upperLegGain(), strideLimit);
+        leftUpperLeg.xRot = limited(authored.leftLeg().x, settings.upperLegGain(), strideLimit);
+        rightLowerLeg.xRot = limited(authored.rightLowerLeg().x, settings.lowerLegGain(), kneeLimit);
+        leftLowerLeg.xRot = limited(authored.leftLowerLeg().x, settings.lowerLegGain(), kneeLimit);
+        rightUpperArm.xRot = limited(authored.rightArm().x, settings.upperArmGain(), strideLimit);
+        leftUpperArm.xRot = limited(authored.leftArm().x, settings.upperArmGain(), strideLimit);
+        rightLowerArm.xRot = limited(authored.rightForeArm().x, settings.lowerArmGain(), elbowLimit);
+        leftLowerArm.xRot = limited(authored.leftForeArm().x, settings.lowerArmGain(), elbowLimit);
+        body.xRot = limited(authored.body().x, 1f, bodyLimit);
+        body.yRot = limited(authored.body().y, 1f, bodyLimit);
+        body.zRot = limited(authored.body().z, 1f, bodyLimit);
+    }
+
+    private void applyJumpPose(MeshyWalkAnimation.Pose authored) {
+        float strideLimit = radians(settings.jumpStrideDegrees());
+        float kneeLimit = radians(settings.jumpKneeDegrees());
+        float elbowLimit = radians(settings.jumpElbowDegrees());
+        float bodyLimit = radians(settings.jumpBodyDegrees());
         rightUpperLeg.xRot = limited(authored.rightLeg().x, settings.upperLegGain(), strideLimit);
         leftUpperLeg.xRot = limited(authored.leftLeg().x, settings.upperLegGain(), strideLimit);
         rightLowerLeg.xRot = limited(authored.rightLowerLeg().x, settings.lowerLegGain(), kneeLimit);

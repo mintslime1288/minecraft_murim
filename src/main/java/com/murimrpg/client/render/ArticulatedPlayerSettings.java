@@ -10,7 +10,10 @@ record ArticulatedPlayerSettings(boolean enabled, float walkStrideDegrees, float
                                  float walkKneeDegrees, float runKneeDegrees, float walkElbowDegrees,
                                  float runElbowDegrees, float bodyTurnDegrees, float upperLegGain,
                                  float lowerLegGain, float upperArmGain, float lowerArmGain,
-                                 float fastRunHorizontalSpeed, float limbSwingScale, boolean logOnce) {
+                                 float fastRunHorizontalSpeed, float limbSwingScale, float jumpStrideDegrees,
+                                 float jumpKneeDegrees, float jumpElbowDegrees, float jumpBodyDegrees,
+                                 float jumpRiseVelocityThreshold, float jumpApexVelocityThreshold,
+                                 int jumpLandingDurationTicks, boolean logOnce) {
     static ArticulatedPlayerSettings load(Path directory) {
         Path file = directory.resolve("articulated-player.yml");
         try {
@@ -30,7 +33,11 @@ record ArticulatedPlayerSettings(boolean enabled, float walkStrideDegrees, float
                 gain(yaml, "retarget.upper-leg-gain", 1.45f), gain(yaml, "retarget.lower-leg-gain", 1.75f),
                 gain(yaml, "retarget.upper-arm-gain", 1f), gain(yaml, "retarget.lower-arm-gain", 1f),
                 speed(yaml, "fast-run.horizontal-speed-threshold", .13f),
-                scale(yaml, "walk.limb-swing-scale", .6662f), bool(yaml, "diagnostics.log-once", false));
+                scale(yaml, "walk.limb-swing-scale", .6662f), degree(yaml, "jump.stride-degrees", 28f),
+                degree(yaml, "jump.knee-degrees", 34f), degree(yaml, "jump.elbow-degrees", 18f),
+                degree(yaml, "jump.body-degrees", 12f), speed(yaml, "jump.rise-velocity-threshold", .035f),
+                speed(yaml, "jump.apex-velocity-threshold", .035f), ticks(yaml, "jump.landing-duration-ticks", 3),
+                bool(yaml, "diagnostics.log-once", false));
     }
 
     private static boolean bool(YamlDocument yaml, String path, boolean fallback) {
@@ -58,6 +65,11 @@ record ArticulatedPlayerSettings(boolean enabled, float walkStrideDegrees, float
         Object value = yaml.get(path); float result = value instanceof Number number ? number.floatValue() : fallback;
         if (!Float.isFinite(result) || result < .1f || result > 3f)
             throw new IllegalArgumentException("articulated-player.yml." + path + " must be within 0.1..3.0");
+        return result;
+    }
+    private static int ticks(YamlDocument yaml, String path, int fallback) {
+        Object value = yaml.get(path); int result = value instanceof Number number ? number.intValue() : fallback;
+        if (result < 1 || result > 8) throw new IllegalArgumentException("articulated-player.yml." + path + " must be within 1..8");
         return result;
     }
 }

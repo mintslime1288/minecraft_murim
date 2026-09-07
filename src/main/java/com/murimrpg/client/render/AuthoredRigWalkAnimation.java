@@ -84,7 +84,19 @@ final class AuthoredRigWalkAnimation {
                 new Vector3f(), new Vector3f(), sample("spine", from, to, amount).add(sample("chest", from, to, amount)));
     }
 
+    MeshyWalkAnimation.Pose sampleFrame(int frameIndex) {
+        int index = Math.clamp(frameIndex, 0, loopFrames);
+        return new MeshyWalkAnimation.Pose(sample("upper_arm.R", index), sample("upper_arm.L", index),
+                sample("lower_arm.R", index), sample("lower_arm.L", index),
+                sample("thigh.R", index), sample("thigh.L", index), sample("shin.R", index), sample("shin.L", index),
+                new Vector3f(), new Vector3f(), sample("spine", index).add(sample("chest", index)));
+    }
+
     private Vector3f sample(String bone, int from, int to, float amount) {
         return new Vector3f(tracks.get(bone).get(from)).lerp(tracks.get(bone).get(to), amount);
+    }
+
+    private Vector3f sample(String bone, int index) {
+        return new Vector3f(tracks.get(bone).get(index));
     }
 }
