@@ -2,10 +2,15 @@ package com.murimrpg.ui;
 
 import com.murimrpg.domain.ContentCatalog;
 import com.murimrpg.domain.CultivationProgression;
+import com.murimrpg.domain.CharacterData;
+import com.murimrpg.domain.CharacterDraft;
+import com.murimrpg.domain.CharacterTrait;
+import com.murimrpg.domain.Family;
 import com.murimrpg.domain.SkillDefinition;
 import com.murimrpg.scheduler.ServerTickScheduler;
 import com.murimrpg.service.PlayerContentService;
 import com.murimrpg.service.PlayerProfileService;
+import com.murimrpg.service.CharacterCreationService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,18 +29,64 @@ public final class FabricUiManager {
     private final UiSettings settings;
     private final PlayerProfileService profiles;
     private final PlayerContentService content;
+    private final CharacterCreationService characters;
     private final UiViewService views;
     private final ServerTickScheduler scheduler;
     private final QuestSidebar sidebar;
 
     public FabricUiManager(UiSettings settings, PlayerProfileService profiles, PlayerContentService content,
-            ContentCatalog catalog, CultivationProgression progression, ServerTickScheduler scheduler) {
+            CharacterCreationService characters, ContentCatalog catalog, CultivationProgression progression,
+            ServerTickScheduler scheduler) {
         this.settings = settings; this.profiles = profiles; this.content = content;
+        this.characters = characters;
         this.views = new UiViewService(catalog, progression); this.scheduler = scheduler;
         this.sidebar = new QuestSidebar(content, views);
     }
 
     public void register() { ServerLifecycleEvents.SERVER_STARTED.register(this::scheduleTick); }
+
+    public void openCharacterCreation(ServerPlayer player) {
+        characters.ensureDraft(player.getUUID()).whenComplete((data, error) -> player.level().getServer().executeIfPossible(() -> {
+            if (error != null) { failure(player, "운명 후보를 불러오지 못했습니다.", error); return; }
+            openCharacterCreation(player, data);
+        }));
+    }
+
+    public void openCharacterCreation(ServerPlayer player, CharacterData data) {
+        if (data.completed()) { player.sendSystemMessage(Component.literal("[강호] 이미 운명을 확정했습니다.")); return; }
+        CharacterDraft draft = data.draft();
+        if (draft == null) { openCharacterCreation(player); return; }
+        SimpleContainer box = new SimpleContainer(45);
+        box.setItem(4, GuiItems.button(Items.NETHER_STAR, "당신의 운명이 결정되었습니다.", "가문을 선택한 뒤 확정하세요."));
+        List<Family> families = availableFamilies(draft);
+        for (int index = 0; index < families.size(); index++) {
+            Family family = families.get(index);
+            box.setItem(10 + index, GuiItems.button(family == draft.selectedFamily() ? Items.EMERALD : Items.PAPER,
+                    family == Family.STREET ? "길거리 출신" : family.displayName(),
+                    family == draft.selectedFamily() ? "선택됨" : "클릭하여 선택"));
+        }
+        Family selected = draft.selectedFamily();
+        int strengthBonus = selected == Family.STREET ? 0 : characters.settings().strengthBonuses().getOrDefault(selected, 0);
+        int speedBonus = selected == Family.STREET ? 0 : characters.settings().speedBonuses().getOrDefault(selected, 0);
+        box.setItem(28, GuiItems.button(Items.IRON_INGOT, "힘: " + draft.baseStrength() + signed(strengthBonus)
+                + " → " + (draft.baseStrength() + strengthBonus), "기본값 / 가문 보정 / 최종값"));
+        box.setItem(29, GuiItems.button(Items.SUGAR, "속도: " + draft.baseSpeed() + signed(speedBonus)
+                + " → " + (draft.baseSpeed() + speedBonus), "기본값 / 가문 보정 / 최종값"));
+        box.setItem(30, GuiItems.button(Items.EXPERIENCE_BOTTLE, "재능: " + (int) (draft.talentMultiplier() * 100) + "%", "숙련도 획득 배율"));
+        box.setItem(31, GuiItems.button(Items.HEART_OF_THE_SEA, "체질: " + draft.constitution().displayName(), draft.constitution().description()));
+        CharacterTrait[] traits = CharacterTrait.values();
+        for (int index = 0; index < traits.length; index++) {
+            boolean locked = draft.lockedTraits().contains(traits[index]);
+            box.setItem(33 + index, GuiItems.button(locked ? Items.TRIPWIRE_HOOK : Items.LEVER,
+                    traitName(traits[index]) + (locked ? " 잠금" : " 잠금 해제"),
+                    "클릭: 리롤 시 " + (locked ? "유지" : "다시 결정")));
+        }
+        box.setItem(40, GuiItems.button(Items.EMERALD_BLOCK, "확정", "이 선택은 영구 저장됩니다."));
+        int remaining = characters.settings().maxRerolls() - data.rerollsUsed();
+        box.setItem(42, GuiItems.button(remaining <= 0 ? Items.BARRIER : Items.REDSTONE,
+                "다시 뽑기", "남은 리롤: " + remaining + "회"));
+        open(player, "강호이문록 | 운명 결정", box, 5, slot -> handleCharacterClick(player, slot));
+    }
 
     public void openProfile(ServerPlayer player) {
         snapshot(player).ifPresentOrElse(view -> {
@@ -120,7 +171,63 @@ public final class FabricUiManager {
     }
 
     private void open(ServerPlayer player, String title, SimpleContainer box, java.util.function.IntConsumer click) {
-        player.openMenu(new SimpleMenuProvider((syncId, inventory, ignored) -> new GanghoMenu(syncId, inventory, box, click),
+        open(player, title, box, 3, click);
+    }
+
+    private void open(ServerPlayer player, String title, SimpleContainer box, int rows, java.util.function.IntConsumer click) {
+        player.openMenu(new SimpleMenuProvider((syncId, inventory, ignored) -> new GanghoMenu(syncId, inventory, box, rows, click),
                 Component.literal(title)));
     }
+
+    private void handleCharacterClick(ServerPlayer player, int slot) {
+        characters.ensureDraft(player.getUUID()).whenComplete((data, loadError) -> player.level().getServer().executeIfPossible(() -> {
+            if (loadError != null) { failure(player, "운명 정보를 불러오지 못했습니다.", loadError); return; }
+            if (data.completed() || data.draft() == null) return;
+            CharacterDraft draft = data.draft();
+            List<Family> families = availableFamilies(draft);
+            int familyIndex = slot - 10;
+            if (familyIndex >= 0 && familyIndex < families.size()) {
+                refresh(player, characters.selectFamily(player.getUUID(), families.get(familyIndex)), "가문 선택에 실패했습니다.");
+            } else if (slot >= 33 && slot < 33 + CharacterTrait.values().length) {
+                refresh(player, characters.toggleLock(player.getUUID(), CharacterTrait.values()[slot - 33]), "특성 잠금 변경에 실패했습니다.");
+            } else if (slot == 42) {
+                refresh(player, characters.reroll(player.getUUID()), "리롤할 수 없습니다.");
+            } else if (slot == 40) {
+                characters.confirm(player.getUUID(), draft.selectedFamily()).whenComplete((confirmed, error) ->
+                        player.level().getServer().executeIfPossible(() -> {
+                            if (error != null) { failure(player, "운명 확정에 실패했습니다.", error); return; }
+                            player.closeContainer();
+                            player.sendSystemMessage(Component.literal("[강호] 캐릭터 생성 완료: " + confirmed.family().displayName()));
+                            openProfile(player);
+                        }));
+            }
+        }));
+    }
+
+    private void refresh(ServerPlayer player, java.util.concurrent.CompletionStage<CharacterData> operation, String message) {
+        operation.whenComplete((updated, error) -> player.level().getServer().executeIfPossible(() -> {
+            if (error != null) { failure(player, message, error); return; }
+            openCharacterCreation(player, updated);
+        }));
+    }
+
+    private static List<Family> availableFamilies(CharacterDraft draft) {
+        return java.util.Arrays.stream(Family.values())
+                .filter(family -> family == Family.STREET || draft.offeredFamilies().contains(family)).toList();
+    }
+
+    private static String signed(int value) { return " (" + (value >= 0 ? "+" : "") + value + ")"; }
+    private static String traitName(CharacterTrait trait) {
+        return switch (trait) {
+            case FAMILY -> "가문";
+            case TALENT -> "재능";
+            case STRENGTH -> "힘";
+            case SPEED -> "속도";
+            case CONSTITUTION -> "체질";
+        };
+    }
+    private static void failure(ServerPlayer player, String message, Throwable error) {
+        player.sendSystemMessage(Component.literal("[강호] " + message + " " + root(error).getMessage()));
+    }
+    private static Throwable root(Throwable error) { while (error.getCause() != null) error = error.getCause(); return error; }
 }

@@ -196,6 +196,23 @@ class ProgressionServiceTest {
     }
 
     @Test
+    void promotesThroughAllThirtyTwoStagesToSaengsagyeongComplete() {
+        progressionService.prepareTestProgress(UUID_VALUE).join();
+
+        for (int expectedOrder = 2; expectedOrder <= 32; expectedOrder++) {
+            PromotionResult result = progressionService.promote(UUID_VALUE, expectedOrder).join();
+            assertEquals(PromotionResult.Status.SUCCESS, result.status(), "promotion to order " + expectedOrder);
+            assertEquals(expectedOrder, result.nextStage().orElseThrow().order());
+        }
+
+        PlayerProfile finalProfile = repository.findByUuid(UUID_VALUE).orElseThrow();
+        assertEquals(MajorRealm.SAENGSAGYEONG_REALM, finalProfile.majorRealm());
+        assertEquals(RealmPhase.COMPLETE, finalProfile.phase());
+        assertEquals(PromotionResult.Status.MAXIMUM_STAGE,
+                progressionService.promote(UUID_VALUE, 33).join().status());
+    }
+
+    @Test
     void concurrentPromotionRequestDoesNotPromoteTwice() throws Exception {
         progressionService.setExp(UUID_VALUE, FINAL_STAGE_EXP).join();
         repository.blockNextSave();

@@ -91,7 +91,7 @@ public final class GanghoImunrok implements ModInitializer {
             MeditationController meditation = new MeditationController(content, profiles, progression,
                     new MeditationService(huashan), catalog.huashanSettings(), scheduler);
             FabricUiManager ui = new FabricUiManager(UiSettings.load(directory.resolve("ui.yml")), profiles,
-                    content, catalog, progression, scheduler);
+                    content, characters, catalog, progression, scheduler);
             TrainingDummyCollisionService dummyCollision = new TrainingDummyCollisionService();
             GanghoContext context = new GanghoContext(profiles, content, progressionService, progression, catalog,
                     huashan, characters, scheduler, meditation, ui, new InventoryCurrencyService(currencies),
@@ -102,7 +102,7 @@ public final class GanghoImunrok implements ModInitializer {
             dummyCollision.register();
             scheduler.register();
             ui.register();
-            ServerLifecycleEvents.SERVER_STOPPING.register(server -> shutdown());
+            ServerLifecycleEvents.SERVER_STOPPED.register(server -> shutdown());
             logger.info("Gangho Imunrok Fabric initialized: Minecraft 26.2, stages " + progression.stages().size()
                     + ", organizations " + catalog.factions().organizations().size() + ", skills " + catalog.skills().size());
         } catch (IOException | RuntimeException exception) {

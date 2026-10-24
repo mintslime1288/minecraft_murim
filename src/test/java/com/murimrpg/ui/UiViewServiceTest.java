@@ -53,8 +53,9 @@ class UiViewServiceTest {
 
         QuestSidebarView sidebar = views.activeQuest(journey).orElseThrow();
 
-        assertEquals("화산파 입문 시험", sidebar.title());
+        assertEquals("진행 중 퀘스트", sidebar.title());
         assertEquals(50, sidebar.progressPercent());
+        assertTrue(sidebar.lines().contains("화산파 입문 시험"));
         assertTrue(sidebar.lines().contains("표적 4/10"));
         assertTrue(sidebar.lines().contains("운기 6/10초"));
     }

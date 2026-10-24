@@ -150,7 +150,21 @@ public final class CommandRegistry {
                 .then(literal("route").executes(this::planned)).then(literal("길찾기").executes(this::planned))
                 .then(literal("admin").requires(this::isOperator)
                         .then(literal("save").executes(this::save))
+                        .then(literal("testprogress")
+                                .then(literal("prepare").executes(this::prepareTestProgress))
+                                .then(literal("clear").executes(this::clearTestProgress)))
+                        .then(requirementBranch())
                         .then(literal("addexp").then(argument("amount", LongArgumentType.longArg(1)).executes(this::addExp))));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> requirementBranch() {
+        var grant = literal("grant");
+        var revoke = literal("revoke");
+        for (String id : context.progression().requirementIds().stream().sorted().toList()) {
+            grant.then(literal(id).executes(command -> requirement(command, id, true)));
+            revoke.then(literal(id).executes(command -> requirement(command, id, false)));
+        }
+        return literal("requirement").then(grant).then(revoke);
     }
 
     private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> characterBranch(
@@ -281,7 +295,8 @@ public final class CommandRegistry {
 
     private int character(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         var player = command.getSource().getPlayerOrException();
-        return async(command, context.characters().ensureDraft(player.getUUID()), this::characterText);
+        context.ui().openCharacterCreation(player);
+        return 1;
     }
 
     private int reroll(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
@@ -296,6 +311,28 @@ public final class CommandRegistry {
 
     private int save(CommandContext<CommandSourceStack> command) {
         return async(command, context.profiles().saveCachedProfiles(), result -> "[관리] 프로필 " + result.successCount() + "개 저장, 실패 " + result.failureCount());
+    }
+
+    private int prepareTestProgress(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        var player = command.getSource().getPlayerOrException();
+        return async(command, context.progressionService().prepareTestProgress(player.getUUID()), profile ->
+                "[관리] 경지 테스트 준비 완료 · " + profile.realmDisplayName() + " · EXP " + profile.cultivationExp()
+                        + " · 전체 경계 조건 부여");
+    }
+
+    private int clearTestProgress(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        var player = command.getSource().getPlayerOrException();
+        return async(command, context.progressionService().clearTestProgress(player.getUUID()), profile ->
+                "[관리] 경지 테스트 초기화 완료 · " + profile.realmDisplayName() + " · EXP " + profile.cultivationExp());
+    }
+
+    private int requirement(CommandContext<CommandSourceStack> command, String id, boolean grant)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        var player = command.getSource().getPlayerOrException();
+        var operation = grant ? context.progressionService().grantRequirement(player.getUUID(), id)
+                : context.progressionService().revokeRequirement(player.getUUID(), id);
+        return async(command, operation, change -> "[관리] 경계 조건 " + change.requirementId()
+                + (change.granted() ? " 부여" : " 제거") + (change.changed() ? " 완료" : " · 변경 없음"));
     }
 
     private int addExp(CommandContext<CommandSourceStack> command) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

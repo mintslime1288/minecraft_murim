@@ -13,13 +13,24 @@ import net.minecraft.world.item.ItemStack;
 final class GanghoMenu extends ChestMenu {
     private final IntConsumer topClick;
     GanghoMenu(int syncId, Inventory inventory, Container container, IntConsumer topClick) {
-        super(MenuType.GENERIC_9x3, syncId, inventory, container, 3);
+        this(syncId, inventory, container, 3, topClick);
+    }
+    GanghoMenu(int syncId, Inventory inventory, Container container, int rows, IntConsumer topClick) {
+        super(menuType(rows), syncId, inventory, container, rows);
         this.topClick = topClick;
     }
     @Override public void clicked(int slot, int button, ContainerInput input, Player player) {
-        if (slot >= 0 && slot < 27) { topClick.accept(slot); return; }
+        if (slot >= 0 && slot < getContainer().getContainerSize()) { topClick.accept(slot); return; }
         super.clicked(slot, button, input, player);
     }
     @Override public ItemStack quickMoveStack(Player player, int slot) { return ItemStack.EMPTY; }
     @Override public boolean stillValid(Player player) { return true; }
+
+    private static MenuType<ChestMenu> menuType(int rows) {
+        return switch (rows) {
+            case 3 -> MenuType.GENERIC_9x3;
+            case 5 -> MenuType.GENERIC_9x5;
+            default -> throw new IllegalArgumentException("Unsupported chest row count: " + rows);
+        };
+    }
 }

@@ -42,10 +42,10 @@ public final class EventRegistry {
                         }
                         player.sendSystemMessage(Component.literal("[강호] " + profile.realmDisplayName() + " · /강호 도움말"));
                         if (!profile.characterData().completed()) {
-                            context.characters().ensureDraft(uuid).whenComplete((draft, draftError) -> server.executeIfPossible(() ->
-                                    player.sendSystemMessage(Component.literal(draftError == null
-                                            ? "[강호] 운명을 정하지 않았습니다. /강호 캐릭터 보기"
-                                            : "[강호] 운명 후보 생성에 실패했습니다."))));
+                            context.characters().ensureDraft(uuid).whenComplete((draft, draftError) -> server.executeIfPossible(() -> {
+                                if (draftError != null) player.sendSystemMessage(Component.literal("[강호] 운명 후보 생성에 실패했습니다."));
+                                else context.ui().openCharacterCreation(player, draft);
+                            }));
                         }
                     }));
         });

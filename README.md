@@ -49,6 +49,7 @@ Windows PowerShell:
 - `/강호 캐릭터 보기`, `/강호 캐릭터 리롤`
 - `/강호 character confirm <family-id>`
 - OP: `/강호 admin save`, `/강호 admin addexp <amount>`
+- 경지 QA: `/강호 admin testprogress <prepare|clear>`, `/강호 admin requirement <grant|revoke> <조건>`
 
 `/gangho`와 `/murim`도 같은 명령 트리를 제공한다. `/내정보`, `/경지`, `/문파`, `/무공`, `/내공`, `/운기조식` 단축 명령도 유지한다.
 

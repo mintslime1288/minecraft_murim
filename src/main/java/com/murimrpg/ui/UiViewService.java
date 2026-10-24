@@ -25,6 +25,7 @@ public final class UiViewService {
         QuestDefinition quest = catalog.quests().find(active.orElseThrow()).orElse(null);
         if (quest == null) return Optional.empty();
         List<String> lines = new ArrayList<>();
+        lines.add(quest.displayName());
         int completed;
         int total;
         if (quest.objectiveType() == QuestObjectiveType.TRAINING) {
@@ -39,7 +40,7 @@ public final class UiViewService {
         }
         int percent = total == 0 ? 100 : completed * 100 / total;
         lines.add("진행도 " + percent + "%");
-        return Optional.of(new QuestSidebarView(quest.displayName(), lines, percent));
+        return Optional.of(new QuestSidebarView("진행 중 퀘스트", lines, percent));
     }
 
     public Optional<QuestSidebarView> entranceTrial(PlayerJourney journey) {
