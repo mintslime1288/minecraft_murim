@@ -1,0 +1,21 @@
+{
+  "status": "REVIEW_ONLY_NOT_INSTALLED",
+  "cubes": 3536,
+  "faces": 21216,
+  "triangles_upper_bound": 42432,
+  "groups": {
+    "01_Blade_curved_bevel": 1582,
+    "02_Wooden_collar": 84,
+    "04_Grip_rounded_wood": 738,
+    "03_Tsuba_beveled_disc": 156,
+    "05_Raised_cord_weave": 976
+  },
+  "texture_sha256": "026339ae7a1f6064e1610b8c0d78e425132645a0ff091027336b7f19d5befc43",
+  "texture_note": "Original PNG is byte-for-byte unchanged. UVs sample reference surfaces.",
+  "back_note": "Unseen rear surface inferred using the same front-side material.",
+  "validation": {
+    "all_positive_volumes": true,
+    "all_coordinates_in_legacy_bounds": true,
+    "all_uvs_in_image": true
+  }
+}

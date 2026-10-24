@@ -1,0 +1,92 @@
+# Restart the Java Fabric client after editing. false selects the previous PAL path.
+enabled: true
+# A gait cycle is a distance, not a duration. With distance-driven-cadence on, one complete
+# left+right cycle covers this much ground, so the step rate follows the player's real speed the
+# way Mojang's own limb swing does and the feet stop skating. Actual player speed, collision and
+# server movement are unchanged - this is only how fast the clip is read.
+#
+# The defaults reproduce vanilla's own cadence at vanilla's own speeds. Mojang's limb swing is
+# cos(walkAnimationPos * 0.6662), so one cycle is 2*pi/0.6662 = 9.431 units of walkAnimationPos,
+# and WalkAnimationState advances that by min(4 * distance, 1) per tick: 2.358 blocks per cycle
+# while walking (0.2159 blocks/tick) and 2.646 while sprinting (0.2806 blocks/tick).
+distance-driven-cadence: true
+walk-cycle-blocks: 2.36
+run-cycle-blocks: 2.65
+fast-run-cycle-blocks: 2.65
+# Only a launch, a riptide or a rubber-banded correction can reach this; normal travel never does.
+minimum-cycle-ticks: 7
+# A cadence says how often a step happens. It cannot say how far the foot travels while it happens,
+# and on a rotation-only rig (no IK, no foot lock) that travel comes entirely from the authored hip
+# swing. The shipped walk clip moves the foot 0.601 blocks per step while the player covers 1.180,
+# so the foot skates half the distance whatever the cadence is.
+#
+# With this on, each gait clip's limb swing is scaled about its own cycle average by a gain SOLVED
+# from that clip's measured foot travel - not a configured constant - so one step's foot travel
+# meets the ground that step covers. Because it is solved, re-authoring a clip with a longer stride
+# drives the gain back toward 1 on its own rather than double-counting.
+# Requires distance-driven-cadence. false restores the authored amplitudes bit for bit.
+stride-match: true
+# 1.0 aims at full ground lock. Lower it if the reach looks theatrical in F5; 0 is the same as off.
+stride-match-strength: 1.0
+# Refuses to widen a clip past this, so a badly authored clip cannot produce a split.
+maximum-stride-gain: 3.0
+# A hard ceiling on any single hip or shoulder angle after widening. Vanilla's own limb swing
+# reaches 80.2 degrees at sprint speed, so nothing shipped here is clamped by this - it exists so a
+# bad gain cannot fold a limb through the body.
+maximum-limb-swing-degrees: 80.0
+
+# ---------------------------------------------------------------- body chain
+# Cadence says how often a step happens and stride match says how far the foot goes. Neither says
+# anything about the BODY: with both on, every channel of a clip is still read at one phase, so the
+# chest turns on the same beat as the feet and the shoulders on the same beat as the chest. Nothing
+# leads, nothing trails, and that is what still reads as limbs on a sine wave.
+#
+# This block is the third layer. Note two honest limits of the rig before tuning it: PAL exposes
+# torso / right_arm / left_arm / right_leg / left_leg only, and the legs are SIBLINGS of the torso,
+# so there is no pelvis joint to counter-rotate against the ribcage - what moves is the torso
+# against the legs. And there is no IK, so a stance foot is matched to the ground, never pinned.
+#
+# false restores the previous pose bit for bit. Every value below can also be set to 0 on its own,
+# so a bad F5 result can be bisected without a rebuild.
+body-chain:
+  enabled: true
+  # The standing orientation: the chest is not square to the camera but turned slightly to the
+  # player's right (clockwise seen from above), in the player's own local yaw, never world yaw.
+  # The head is unaffected - PAL disables the head's rotation channels outright, so Mojang's mouse
+  # look stays authoritative and aim cannot be dragged. Conservative on purpose. Valid 0..12.
+  torso-yaw-offset-degrees: 4.0
+  # The chain delay, as fractions of one gait cycle: the legs read the gait phase, the chest reads
+  # it this far in the past, and the arms that much again further back. This is what makes a step
+  # look transmitted through the body instead of four loops playing at once. The two together are
+  # refused above 0.20, which keeps them far from the 0.5 that separates the two legs, so the
+  # contralateral arm/leg phase cannot be inverted. Valid 0..0.15 each.
+  chest-lag-fraction: 0.04
+  shoulder-lag-fraction: 0.05
+  # Weight acceptance. A short smooth pulse at each foot contact: both contacts dip the chest, and
+  # the roll alternates with the support side. The contact instant is MEASURED off the clip, not
+  # configured, so re-authoring the curve moves the accent with it. The pitch pulse is made
+  # zero-mean so it cannot quietly add standing lean on top of the run lean.
+  # Roll is the axis that reads as waddling if overdone - keep it the smaller of the two.
+  # Valid 0..4, 0..3 and 0.04..0.25.
+  contact-pitch-degrees: 1.2
+  contact-roll-degrees: 0.8
+  contact-width-fraction: 0.12
+  # Hard ceiling on the finished torso yaw, offset and authored swing together. Valid 5..25.
+  maximum-torso-yaw-degrees: 15.0
+# The previous fixed-period clock. Used only when distance-driven-cadence is false, which is the
+# one-line rollback if the new cadence is judged worse in F5.
+walk-cycle-ticks: 32
+run-cycle-ticks: 16
+fast-run-cycle-ticks: 14
+transition-ticks: 5
+air-transition-ticks: 2
+landing-transition-ticks: 4
+response-ticks: 4
+torso-roll-weight: 0.35
+extra-run-lean-degrees: 0.0
+idle-arm-relax-weight: 0.65
+strafe-swing-weight: 0.35
+moving-jump-carry-ticks: 8
+minimum-fall-ticks: 4
+# At most once every 2 seconds for the local player. No per-frame logging.
+diagnostics: false

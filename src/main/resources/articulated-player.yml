@@ -6,16 +6,42 @@
 # Keep this experimental replacement available only as a fallback/debug path.
 enabled: false
 walk:
-  stride-degrees: 31.0
-  knee-degrees: 29.0
-  elbow-degrees: 14.0
-  body-turn-degrees: 4.5
+  # Grounded V3: the longer stride and passing-knee pose must not be clamped.
+  stride-degrees: 40.0
+  knee-degrees: 52.0
+  elbow-degrees: 30.0
+  # Ceiling for MURIM_WALK_TORSO_V6 (murim_walk_v6_torso.json), whose torso peaks at 4.950.
+  # At the old 4.5 this ceiling flattened 15 of 24 authored frames at exactly 4.500.
+  # Raising it restores the curve and also caps V6's roll (1.500) and yaw (still 0).
+  body-turn-degrees: 5.4
   # This mirrors HumanoidModel 26.2's limb-swing multiplier.
-  limb-swing-scale: 0.6662
+  limb-swing-scale: 0.5330
 run:
-  stride-degrees: 42.0
+  stride-degrees: 48.0
   knee-degrees: 38.0
-  elbow-degrees: 26.0
+  elbow-degrees: 70.0
+  # The run clip authors 8.5 to 9.2 degrees of forward lean. Sharing walk's 4.5 ceiling
+  # truncated that to a constant, so the running torso looked exactly like the walking one.
+  body-degrees: 22.0
+  # Kept at walk's value until Blender B-stage improves the authored stride length.
+  limb-swing-scale: 0.7661
+  # A short roll accent as each foot takes the weight, and nothing else: no extra lean, no bob, no
+  # translation. Measured off murim_run_v3_torso.json, the right foot lands at phase 0 and the left
+  # exactly half a cycle later; the accent rises over one of the clip's frames and is back to
+  # exactly zero four frames later, so it is silent over half of every step. It presses the torso a
+  # little further toward the landing side, the same way the authored roll is already leaning at
+  # that instant, rather than deepening the forward lean, which is a different axis and has only
+  # 0.050 degrees of headroom anyway.
+  # Running on the ground and going forwards only. It scales with the walk-to-run blend and with
+  # gait speed, so walking, standing, strafing, reversing, jumping and every vanilla fallback get
+  # exactly zero, and 0.0 makes the rendered torso bit-identical to the authored clip.
+  # Valid 0..2.0. Changing this needs a client restart.
+  contact-roll-degrees: 0.0
+  # Relative shoulder-pitch lag for grounded forward running, requires torso-hip-pivot.
+  # 0 disables it exactly. Valid 0..8 ticks; first trial 0.75. Client restart required.
+  arm-follow-ticks: 0.0
+  # Maximum difference from the authored arm pose (0..6 degrees); does not enlarge its range.
+  arm-lag-degrees: 3.0
 jump:
   # Rotation safety limits for the authored takeoff/rise/apex/fall/landing poses.
   stride-degrees: 28.0
@@ -30,6 +56,45 @@ jump:
   landing-duration-ticks: 5
   # Short step-offs from slabs/stairs are not jump landings.
   minimum-airborne-ticks: 3
+  # Cross-fade window between RISE, APEX and FALL. Ground impact remains immediate.
+  phase-blend-ticks: 2
+  # How long the launch stride decays into the authored jump pose.
+  take-off-blend-ticks: 6
+locomotion:
+  # Sideways travel has no authored clip. This is how much of the forward gait survives
+  # while strafing: 0 freezes the legs, 1 would look like a confident forward stride.
+  # Diagonal movement interpolates between this and 1 automatically.
+  strafe-gait-weight: 0.35
+  # Forward speed in blocks per tick below which the previous forward/reverse decision is
+  # kept. Prevents the gait flickering between the two loops while turning or standing.
+  reverse-deadband: 0.012
+  # Ticks spent easing between the walk and the run clip. They differ by up to 18 degrees
+  # at the same cycle position, so a hard swap on the sprint key is visible.
+  gait-blend-ticks: 3
+  # Rotation-only easing for the torso, and for nothing else: the body follows the rotation
+  # the authored clips produced instead of landing on it in one render frame. The eased value
+  # is always between values the clips themselves reached, so it can never exceed the ceilings
+  # above or widen the gap between the body and the shoulders.
+  # 0.0 disables it and the rendered pose is bit-identical to the authored clips. Valid 0..8.
+  # Legs, arms, head, jump and every vanilla fallback are untouched either way.
+  # Suggested first trial value: 2.0. Changing this needs a client restart.
+  torso-follow-ticks: 0.0
+  # Where the torso turns, and what it carries. false is the layout that ships today: the torso
+  # turns about the neck and the arms hang from root, which leaves the thighs standing 1.969 px
+  # in front of the belly at the run lean. true turns the torso about the hip, which puts that
+  # step at exactly zero, and hangs the arms from the torso so the shoulders keep them.
+  # Both layouts are identical while standing. Changing this needs a client restart, and it is
+  # a mesh layout rather than a tuning value, so it is a plain on/off with no range.
+  torso-hip-pivot: false
+  # Whether the head hangs off the torso instead of off root. With torso-hip-pivot on, the neck
+  # travels 1.970 px forward at the run lean while a head on root stays at the model origin, which
+  # is the head appearing to hang in space behind a leaning body. On, the head pivot rides the neck
+  # and its local rotation is solved so the world look stays exactly the mouse yaw and pitch: the
+  # head's position follows the lean, its aim does not. Measured worst-case look error 0.0396
+  # degrees, which is float rounding. Requires torso-hip-pivot true; on its own it does nothing and
+  # falls back to the root-head layout. A mesh layout rather than a tuning value, so it is a plain
+  # on/off with no range. Changing this needs a client restart.
+  torso-head-follow: false
 retarget:
   # Meshy Humanoid local rotations converted into Minecraft ModelPart rotations.
   upper-leg-gain: 1.20
@@ -39,6 +104,242 @@ retarget:
 fast-run:
   # Horizontal client velocity above this value selects 빠르게 달리기.glb.
   horizontal-speed-threshold: 0.13
+motion-style:
+  # Each part can be disabled independently. Client restart required.
+  run:
+    enabled: false
+    leg-gain: 1.12
+    knee-gain: 1.5
+    arm-gain: 1.30
+    elbow-bias-degrees: 45.0
+    lean-bias-degrees: 10.0
+  torso:
+    enabled: false
+    roll-scale: 0.15
+    arm-yaw-gain: 0.10
+    yaw-limit-degrees: 5.0
+  idle:
+    enabled: false
+    lean-degrees: 2.0
+    elbow-degrees: 12.0
+    breath-degrees: 0.45
+    breath-seconds: 4.0
+    fade-speed: 0.2
+vanilla-silhouette:
+  # Pose Mojang's own player model instead of replacing it. While this is on, the split
+  # joint model is never submitted, in any state, so the skin, the outer layers, the slim and
+  # classic arms, the cape, the armour and the held item are always the ordinary Java Edition
+  # player and nothing can switch body shape when you attack, crouch, swim or put armour on.
+  # The price is that Mojang's arms and legs are single cuboids: this mode cannot bend an elbow
+  # or a knee. Measured, the split model is identical to vanilla while standing and only differs
+  # while moving, where a folded knee shortens the visible leg by up to 10.4 percent and a folded
+  # elbow the arm by up to 9.8 percent. Read once at client start; a change needs a restart.
+  enabled: false
+  # Render ticks a state change takes to fade in or out, so attacking or crouching never snaps.
+  # Valid 0..20.
+  fade-ticks: 4.0
+  gait:
+    # Walk and run posed from the project's own clips, mapped onto the rigid limbs by their UPPER
+    # segment, which is where the vanilla part pivots. Pointing the rigid leg at the authored foot
+    # instead was measured and rejected: at the run clip's deepest knee fold that direction is
+    # 47.3 degrees against the thigh's 29.8, which reads as a kick.
+    enabled: false
+    # Step length. Cadence is deliberately not slowed by default: at the walk speed the phase
+    # advances 0.5751 rad per tick, which is 3.66 steps per second and 1.179 m of ground per step,
+    # while a rigid 12 px leg at 42 degrees renders only 1.004 m, so the foot already slides 14.9
+    # percent (24.1 percent sprinting). The cadence that would remove the slide is FASTER, not
+    # slower, so lengthening the stride is the change that helps the look and the slide together.
+    # Valid 0.5..1.6.
+    stride-scale: 1.0
+    arm-stride-scale: 1.0
+    # Ceiling on any single limb rotation, degrees. Valid 0..62.
+    limb-ceiling-degrees: 45.0
+    # Forward lean. The run value is what separates a run from a fast walk. Valid 0..18.
+    walk-lean-degrees: 3.0
+    run-lean-degrees: 10.0
+    # The torso following the arm that swings forward, instead of rocking side to side. On this
+    # model the arms are children of root, not of body, so they are never yawed: the hand path and
+    # anything held in it stay exactly vanilla, and the shoulder seam offsets by 4*sin(yaw) px,
+    # 0.209 at 3 degrees. Valid 0..6 degrees, gain 0..1.
+    shoulder-yaw-degrees: 3.0
+    shoulder-yaw-gain: 0.25
+    # 1.0 is exactly Mojang's limb-swing multiplier. Valid 0.5..1.5.
+    cadence-scale: 1.0
+  idle:
+    # A ready stance built only from rotation: no translation, so the character cannot bob.
+    enabled: false
+    # Gait speed at which the stance has fully faded out. Valid 0.02..0.5.
+    fade-speed: 0.12
+    lean-degrees: 1.5
+    # Arms standing off the ribs instead of lying flat against them. Valid 0..6.
+    arm-spread-degrees: 2.0
+    # A small front-to-back asymmetry, so it is a stance and not a mannequin. Valid 0..10.
+    arm-pitch-degrees: 3.0
+    # Breathing as a fraction of a degree of torso rotation, on a long clock-driven period.
+    # Valid 0..1.5 degrees and 2..8 seconds.
+    breath-degrees: 0.35
+    breath-seconds: 4.0
+  jump:
+    # A jump while moving keeps the stride it left the ground with, instead of releasing into the
+    # symmetric authored jump frames, which is why a running jump currently reads as a standing
+    # one and why the legs keep swinging in the air. Rotation only; the player is not moved.
+    enabled: false
+    # How much of the take-off split survives the whole flight. 0.0 is today. Valid 0..1.
+    hold-fraction: 0.55
+    # Lean into the direction of travel, degrees per block-per-tick of the player's own forward
+    # and sideways velocity, each bounded by its own ceiling. Valid 0..60 and 0..18 / 0..4.
+    lean-degrees-per-block: 22.0
+    lean-degrees: 8.0
+    roll-degrees-per-block: 14.0
+    roll-degrees: 3.0
+combat-motion:
+  # A rotation-only upper-body attack drawn on the articulated model instead of handing the frame
+  # back to Mojang's model. Turning this on is what stops the elbows and knees vanishing the moment
+  # you swing: ModelPartArticulatedPlayerRenderer refuses the frame while attackTime > 0.01 today,
+  # and this block drops that one condition. Item use, swimming, riding, death and armour keep the
+  # fallback they have always had. Read once at client start; a change needs a restart.
+  # A value out of range disables this block for the run and logs the reason once. It does not
+  # stop the client from starting.
+  enabled: false
+  # Render ticks used to release the pose held when a second attack restarts the swing clock, so a
+  # fast combo crosses into the new swing instead of snapping back to rest. Valid 0..8.
+  blend-ticks: 2.0
+  diagnostics:
+    log-once: false
+  hand-anchor:
+    # Point Mojang's one-piece arm at the articulated hand so a held item lands on it. The
+    # held-item layer calls getParentModel().translateToHand, and the parent model is the vanilla
+    # PlayerModel, NOT the split model that is actually drawn - so without this the sword follows
+    # the vanilla walk swing and drifts away from the visible hand, during walking as much as
+    # during an attack. Writing to that arm moves the item only; the model is not drawn.
+    # What is left over is length: the rigid arm reaches 10 px from the pivot while a folded one
+    # reaches less, so the item sits slightly beyond the hand as the elbow bends.
+    enabled: false
+  barehand:
+    random-hands: true
+    inward-yaw-degrees: 10.0
+    # Not a straight vanilla 90 degree arm lift. Phases are fractions of the swing:
+    # 0 -> anticipation the shoulder gathers back, -> acceleration the strike goes out,
+    # -> contact it holds, -> 1 it merges back into the walk swing. Each segment is a smoothstep,
+    # so value and slope are continuous at every join and no frame steps.
+    #
+    # Measured from the 26.2 jar, because it decides how short these phases have to be: the swing
+    # clock is swingTime/duration with duration 6 by default, and LivingEntity.swing seeds
+    # swingTime = -1, so the FIRST tick of a swing reports exactly 0 and only the next six ticks
+    # carry the 0 -> 1 ramp. Nothing here can move that first tick; keeping the anticipation short
+    # is what keeps the punch from also feeling late.
+    enabled: false
+    anticipation: 0.20
+    acceleration: 0.46
+    contact: 0.58
+    # How far back the gather goes, as a fraction of the strike. Valid 0..1.
+    wind-up: 0.30
+    # How much the strike relaxes across the contact hold. Valid 0..0.5.
+    settle: 0.10
+    # Places in the kinetic chain, not delays: the torso reads the drive curve directly, the upper
+    # arm reads it warped by arm-lag and the forearm by arm-lag + elbow-lag, so the weight turns
+    # first, the shoulder follows and the fist arrives last. The warp is zero at both ends of the
+    # swing, so no tap is left hanging when the clock reaches 1. Valid 0..0.24 and 0..0.4, and the
+    # two together are capped at 0.24, past which the warped clock would run backwards.
+    arm-lag: 0.05
+    elbow-lag: 0.09
+    # The attacking shoulder comes through; the torso follows the fist rather than leading it.
+    # The roll is the weight going onto the strike: positive lifts the right shoulder, so the
+    # striking shoulder rolls up toward the chin. Small on purpose - this axis is what reads as
+    # wobble if it is overdone. Valid 0..26, 0..12 and 0..6.
+    body-yaw-degrees: 16.0
+    body-pitch-degrees: 3.0
+    body-roll-degrees: 2.0
+    upper-arm-degrees: 76.0
+    # The elbow opens from the gather bend toward the strike bend and stops there, so the arm is
+    # never locked straight at contact and never passes through straight on the way out either.
+    elbow-gather-degrees: 58.0
+    elbow-strike-degrees: 12.0
+    # A fist travels straight, so no roll.
+    arm-roll-degrees: 0.0
+    # The other arm balances rather than mirrors. While a guard is up most of this is given back so
+    # the off hand keeps covering instead of swinging away from the face. Valid 0..1 each.
+    counter-arm-degrees: 4.0
+    counter-elbow-degrees: 8.0
+    off-arm-guard-yield: 1.0
+    # How much of the fighting guard this strike may push aside while it runs. 1.0 means the
+    # punching arm is fully its own during the punch and the guard comes back as the swing ends,
+    # which is what stops the recovery passing through the neutral pose before the guard.
+    guard-yield: 1.0
+  barehand-stance:
+    # A fighting guard the character drops into AFTER a bare-handed swing and holds for a few
+    # seconds, then releases back into the normal idle or walk. It does NOT slow the punch down:
+    # attackTime comes straight off the entity's swing clock, so stretching it would put the
+    # animation out of step with the hit the server already resolved. The fast punch itself is a
+    # separate flag - barehand.enabled - so this can be judged with the punch switched off.
+    # Read once at client start; a change needs a restart. A value out of range disables only this
+    # block for the run and logs the reason once.
+    #
+    # Note, because it will show up in play: LivingEntity.swing is what the render state sees, and
+    # MINING A BLOCK WITH AN EMPTY HAND is the same swing as a punch. It will raise this guard.
+    # Mining with any tool will not, because the hand is not empty.
+    enabled: false
+    # Ticks the guard is held after the last bare-handed swing. 60 is three seconds. Valid 0..400.
+    hold-ticks: 60.0
+    # Render ticks to raise and to release it. Valid 0..40 each.
+    blend-in-ticks: 4.0
+    blend-out-ticks: 10.0
+    # How much guard survives each locomotion state. Walking keeps the lower body's gait and a
+    # weaker upper guard; sprinting and being airborne hand the body back. Valid 0..1.
+    walk-weight: 0.65
+    sprint-weight: 0.0
+    airborne-weight: 0.0
+    # A small forward lean and a bladed torso, so the character is not standing square on.
+    # The yaw turns the lead shoulder toward the target. Valid 0..8 and 0..12.
+    body-pitch-degrees: 4.0
+    body-yaw-degrees: 6.0
+    # The guard itself. The upper arm brings the hand forward and the elbow does the lifting: with
+    # these numbers the lead hand sits 5.92 px forward at root y 3.42 and the rear hand 4.21 px
+    # forward at root y 3.21, which is chest height and below the head box (root y -8..0), so the
+    # hands guard the chest without covering the face. Valid 0..45 and 0..135.
+    front-upper-arm-degrees: 40.0
+    front-elbow-degrees: 120.0
+    rear-upper-arm-degrees: 35.0
+    rear-elbow-degrees: 125.0
+    # Elbows tucked in rather than flared out. Valid 0..12.
+    arm-tuck-degrees: 8.0
+    # A small ready stance, applied ONLY while standing still - moving, the gait owns the legs.
+    # Bending a knee with no root translation lifts the foot, so these are sized to keep that
+    # invisible: at 6 and 10 degrees the foot rises 0.047 px. Valid 0..14 and 0..20.
+    leg-ready-degrees: 6.0
+    knee-ready-degrees: 10.0
+    # Breathing is OFF by default because motion-style.idle already breathes and two of them would
+    # double the amplitude. Rotation only either way. Valid 0..0.6 degrees and 2..12 seconds.
+    breath-degrees: 0.0
+    breath-seconds: 5.0
+  sword:
+    # One clear basic cut. Combos, variants, two-handed weapons, spears and bows are out of scope.
+    # The weapon look comes from weight shift, lead rotation, arc and recovery, not from effects.
+    # Classified by whether the attacking hand holds anything: SwingAnimationType cannot be used,
+    # because ItemStack.getSwingAnimation falls back to SwingAnimation.DEFAULT, which is WHACK, so
+    # an empty hand reports WHACK too. That also means the 목검 needs no tag of its own.
+    enabled: false
+    anticipation: 0.24
+    acceleration: 0.50
+    contact: 0.62
+    wind-up: 0.50
+    settle: 0.10
+    elbow-lag: 0.10
+    body-yaw-degrees: 20.0
+    body-pitch-degrees: 4.0
+    upper-arm-degrees: 60.0
+    elbow-gather-degrees: 74.0
+    elbow-strike-degrees: 26.0
+    # The blade travels a diagonal rather than a straight line. Valid 0..30.
+    arm-roll-degrees: 12.0
+    counter-arm-degrees: 26.0
+    counter-elbow-degrees: 14.0
+    # The same chain, weight-transfer and guard-handover dials as the barehand move. Not exercised
+    # while sword.enabled is false; they exist so the block validates as one shape.
+    arm-lag: 0.06
+    body-roll-degrees: 3.0
+    off-arm-guard-yield: 0.75
+    guard-yield: 1.0
 diagnostics:
   # One INFO line per client run after final ModelPart submission; never per frame.
   log-once: false

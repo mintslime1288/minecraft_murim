@@ -1,20 +1,19 @@
 {
   "name": "pal_walk",
   "author": "MurimRPG",
-  "description": "Grounded adult walk with opposing shoulders and knee flexion",
+  "description": "Five-phase grounded walk with baked shoulder and gaze compensation",
   "emote": {
-    "isLoop": true,
-    "returnTick": 0,
-    "beginTick": 0,
-    "endTick": 24,
-    "stopTick": 25,
-    "degrees": false,
+    "isLoop": true, "returnTick": 0, "beginTick": 0, "endTick": 28, "stopTick": 29, "degrees": false,
     "moves": [
-      {"tick": 0, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": -0.48, "bend": 0.08}, "leftLeg": {"roll": -0.028, "pitch": 0.38, "bend": 0.30}, "rightArm": {"pitch": 0.24, "bend": -0.10}, "leftArm": {"pitch": -0.24, "bend": -0.08}, "torso": {"pitch": 0.018, "yaw": 0.014, "roll": -0.003, "bend": 0.014}},
-      {"tick": 6, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": 0.02, "bend": 0.22}, "leftLeg": {"roll": -0.028, "pitch": -0.03, "bend": 0.10}, "rightArm": {"pitch": -0.015, "bend": -0.10}, "leftArm": {"pitch": 0.015, "bend": -0.09}, "torso": {"pitch": 0.022, "yaw": 0.0, "roll": 0.002, "bend": 0.016}},
-      {"tick": 12, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": 0.38, "bend": 0.30}, "leftLeg": {"roll": -0.028, "pitch": -0.48, "bend": 0.08}, "rightArm": {"pitch": -0.24, "bend": -0.08}, "leftArm": {"pitch": 0.24, "bend": -0.10}, "torso": {"pitch": 0.018, "yaw": -0.014, "roll": 0.003, "bend": 0.014}},
-      {"tick": 18, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": -0.03, "bend": 0.10}, "leftLeg": {"roll": -0.028, "pitch": 0.02, "bend": 0.22}, "rightArm": {"pitch": 0.015, "bend": -0.09}, "leftArm": {"pitch": -0.015, "bend": -0.10}, "torso": {"pitch": 0.022, "yaw": 0.0, "roll": -0.002, "bend": 0.016}},
-      {"tick": 24, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.028, "pitch": -0.48, "bend": 0.08}, "leftLeg": {"roll": -0.028, "pitch": 0.38, "bend": 0.30}, "rightArm": {"pitch": 0.24, "bend": -0.10}, "leftArm": {"pitch": -0.24, "bend": -0.08}, "torso": {"pitch": 0.018, "yaw": 0.014, "roll": -0.003, "bend": 0.014}}
+      {"tick":0,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.028,"pitch":-0.410,"bend":0.050},"leftLeg":{"roll":-0.028,"pitch":0.290,"bend":0.310},"rightArm":{"pitch":0.205,"yaw":-0.026,"roll":0.018,"bend":-0.205},"leftArm":{"pitch":-0.350,"yaw":0.034,"roll":-0.026,"bend":-0.130},"torso":{"pitch":-0.055,"yaw":0.034,"roll":0.012},"head":{"pitch":0.035,"yaw":-0.022,"roll":-0.005}},
+      {"tick":3,"easing":"EASEINOUTQUAD","rightLeg":{"roll":0.028,"pitch":-0.285,"bend":0.125},"leftLeg":{"roll":-0.028,"pitch":0.205,"bend":0.345},"rightArm":{"pitch":0.115,"yaw":-0.020,"roll":0.014,"bend":-0.215},"leftArm":{"pitch":-0.285,"yaw":0.028,"roll":-0.022,"bend":-0.145},"torso":{"pitch":-0.064,"yaw":0.026,"roll":0.006},"head":{"pitch":0.043,"yaw":-0.017,"roll":-0.003}},
+      {"tick":7,"easing":"EASEINQUAD","rightLeg":{"roll":0.028,"pitch":0.015,"bend":0.195},"leftLeg":{"roll":-0.028,"pitch":-0.070,"bend":0.115},"rightArm":{"pitch":-0.070,"yaw":-0.008,"roll":0.006,"bend":-0.190},"leftArm":{"pitch":-0.060,"yaw":0.008,"roll":-0.006,"bend":-0.180},"torso":{"pitch":-0.048,"yaw":0.004,"roll":-0.005},"head":{"pitch":0.030,"yaw":-0.003,"roll":0.002}},
+      {"tick":10,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.028,"pitch":0.225,"bend":0.285},"leftLeg":{"roll":-0.028,"pitch":-0.305,"bend":0.075},"rightArm":{"pitch":-0.245,"yaw":-0.025,"roll":0.020,"bend":-0.150},"leftArm":{"pitch":0.095,"yaw":0.020,"roll":-0.014,"bend":-0.210},"torso":{"pitch":-0.052,"yaw":-0.024,"roll":-0.009},"head":{"pitch":0.033,"yaw":0.016,"roll":0.004}},
+      {"tick":14,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.028,"pitch":0.290,"bend":0.310},"leftLeg":{"roll":-0.028,"pitch":-0.410,"bend":0.050},"rightArm":{"pitch":-0.350,"yaw":-0.034,"roll":0.026,"bend":-0.130},"leftArm":{"pitch":0.205,"yaw":0.026,"roll":-0.018,"bend":-0.205},"torso":{"pitch":-0.055,"yaw":-0.034,"roll":-0.012},"head":{"pitch":0.035,"yaw":0.022,"roll":0.005}},
+      {"tick":17,"easing":"EASEINOUTQUAD","rightLeg":{"roll":0.028,"pitch":0.205,"bend":0.345},"leftLeg":{"roll":-0.028,"pitch":-0.285,"bend":0.125},"rightArm":{"pitch":-0.285,"yaw":-0.028,"roll":0.022,"bend":-0.145},"leftArm":{"pitch":0.115,"yaw":0.020,"roll":-0.014,"bend":-0.215},"torso":{"pitch":-0.064,"yaw":-0.026,"roll":-0.006},"head":{"pitch":0.043,"yaw":0.017,"roll":0.003}},
+      {"tick":21,"easing":"EASEINQUAD","rightLeg":{"roll":0.028,"pitch":-0.070,"bend":0.115},"leftLeg":{"roll":-0.028,"pitch":0.015,"bend":0.195},"rightArm":{"pitch":-0.060,"yaw":-0.008,"roll":0.006,"bend":-0.180},"leftArm":{"pitch":-0.070,"yaw":0.008,"roll":-0.006,"bend":-0.190},"torso":{"pitch":-0.048,"yaw":-0.004,"roll":0.005},"head":{"pitch":0.030,"yaw":0.003,"roll":-0.002}},
+      {"tick":24,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.028,"pitch":-0.305,"bend":0.075},"leftLeg":{"roll":-0.028,"pitch":0.225,"bend":0.285},"rightArm":{"pitch":0.095,"yaw":-0.020,"roll":0.014,"bend":-0.210},"leftArm":{"pitch":-0.245,"yaw":0.025,"roll":-0.020,"bend":-0.150},"torso":{"pitch":-0.052,"yaw":0.024,"roll":0.009},"head":{"pitch":0.033,"yaw":-0.016,"roll":-0.004}},
+      {"tick":28,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.028,"pitch":-0.410,"bend":0.050},"leftLeg":{"roll":-0.028,"pitch":0.290,"bend":0.310},"rightArm":{"pitch":0.205,"yaw":-0.026,"roll":0.018,"bend":-0.205},"leftArm":{"pitch":-0.350,"yaw":0.034,"roll":-0.026,"bend":-0.130},"torso":{"pitch":-0.055,"yaw":0.034,"roll":0.012},"head":{"pitch":0.035,"yaw":-0.022,"roll":-0.005}}
     ]
   }
 }

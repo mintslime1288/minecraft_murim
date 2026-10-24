@@ -9,11 +9,15 @@ import org.slf4j.LoggerFactory;
 
 /** Client-only PAL animation selection and safety settings. */
 record PalAnimationSettings(boolean enabled, boolean localPlayerOnly, double movingThreshold,
-                            double fastRunThreshold, double riseVelocityThreshold,
+                            double movingExitThreshold, double fastRunThreshold,
+                            double fastRunExitThreshold, double riseVelocityThreshold,
                             double apexVelocityThreshold, int takeoffDurationTicks,
                             int landingDurationTicks, int locomotionFadeTicks,
                             int airborneFadeTicks, int landingFadeTicks,
                             int locomotionPriority, int combatPriority,
+                            boolean boxingRandomHands, int boxingGuardHoldTicks,
+                            boolean fullBodyFollowEnabled, double shoulderPitchFollow,
+                            double shoulderYawFollow, double shoulderRollFollow,
                             boolean preferThirdPartyProvider, String thirdPartyProviderModId) {
     private static final Logger LOGGER = LoggerFactory.getLogger("MurimRPG-PAL");
 
@@ -33,7 +37,9 @@ record PalAnimationSettings(boolean enabled, boolean localPlayerOnly, double mov
         boolean enabled = bool(yaml, "enabled", true);
         boolean localOnly = bool(yaml, "local-player-only", false);
         double moving = finiteRange(yaml, "movement.moving-threshold", 0.008, 0.0001, 0.1);
+        double movingExit = finiteRange(yaml, "movement.moving-exit-threshold", 0.004, 0.0001, moving);
         double fast = finiteRange(yaml, "movement.fast-run-threshold", 0.13, 0.02, 0.5);
+        double fastExit = finiteRange(yaml, "movement.fast-run-exit-threshold", 0.11, 0.02, fast);
         double rise = finiteRange(yaml, "airborne.rise-velocity-threshold", 0.035, 0.001, 1.0);
         double apex = finiteRange(yaml, "airborne.apex-velocity-threshold", 0.035, 0.001, 0.25);
         int takeoffTicks = integerRange(yaml, "airborne.takeoff-duration-ticks", 3, 1, 10);
@@ -43,11 +49,19 @@ record PalAnimationSettings(boolean enabled, boolean localPlayerOnly, double mov
         int landingFade = integerRange(yaml, "transitions.landing-fade-ticks", 3, 0, 10);
         int locomotion = integerRange(yaml, "layers.locomotion-priority", 200, 0, 10_000);
         int combat = integerRange(yaml, "layers.combat-priority", 400, locomotion + 1, 20_000);
+        boolean boxingRandomHands = bool(yaml, "combat.boxing.random-hands", true);
+        int boxingGuardHoldTicks = integerRange(yaml, "combat.boxing.guard-hold-ticks", 60, 0, 200);
+        boolean fullBodyFollow = bool(yaml, "full-body-follow.enabled", true);
+        double shoulderPitchFollow = finiteRange(yaml, "full-body-follow.shoulder-pitch-follow", 0.35, 0.0, 1.0);
+        double shoulderYawFollow = finiteRange(yaml, "full-body-follow.shoulder-yaw-follow", 0.55, 0.0, 1.0);
+        double shoulderRollFollow = finiteRange(yaml, "full-body-follow.shoulder-roll-follow", 0.30, 0.0, 1.0);
         boolean preferThirdParty = bool(yaml, "third-party-provider.prefer-when-installed", true);
         String providerModId = modId(yaml, "third-party-provider.mod-id", "cpa");
-        return new PalAnimationSettings(enabled, localOnly, moving, fast, rise, apex,
+        return new PalAnimationSettings(enabled, localOnly, moving, movingExit, fast, fastExit, rise, apex,
                 takeoffTicks, landingTicks, locomotionFade, airborneFade, landingFade,
-                locomotion, combat, preferThirdParty, providerModId);
+                locomotion, combat, boxingRandomHands, boxingGuardHoldTicks,
+                fullBodyFollow, shoulderPitchFollow, shoulderYawFollow, shoulderRollFollow,
+                preferThirdParty, providerModId);
     }
 
     private static boolean bool(YamlDocument yaml, String path, boolean fallback) {

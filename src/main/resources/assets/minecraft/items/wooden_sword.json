@@ -1,0 +1,27 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/wooden_sword"
+    },
+    "entries": [
+      {
+        "threshold": 32001,
+        "model": {
+          "type": "minecraft:model",
+          "model": "murimrpg:item/mokgeom_reference_v1"
+        }
+      },
+      {
+        "threshold": 32001.001953125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/wooden_sword"
+        }
+      }
+    ]
+  }
+}

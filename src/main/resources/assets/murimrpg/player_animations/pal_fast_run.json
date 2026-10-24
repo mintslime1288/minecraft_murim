@@ -1,20 +1,15 @@
 {
-  "name": "pal_fast_run",
-  "author": "MurimRPG",
-  "description": "Fast martial sprint without root translation or camera bob",
-  "emote": {
-    "isLoop": true,
-    "returnTick": 0,
-    "beginTick": 0,
-    "endTick": 12,
-    "stopTick": 13,
-    "degrees": false,
-    "moves": [
-      {"tick": 0, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": -0.92, "bend": 0.14}, "leftLeg": {"roll": -0.050, "pitch": 0.72, "bend": 0.68}, "rightArm": {"pitch": 0.72, "bend": -0.48}, "leftArm": {"pitch": -0.62, "bend": -0.42}, "torso": {"pitch": -0.16, "yaw": 0.028, "roll": -0.006, "bend": -0.035}},
-      {"tick": 3, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": 0.02, "bend": 0.50}, "leftLeg": {"roll": -0.050, "pitch": -0.10, "bend": 0.24}, "rightArm": {"pitch": -0.05, "bend": -0.52}, "leftArm": {"pitch": 0.05, "bend": -0.50}, "torso": {"pitch": -0.18, "yaw": 0.0, "roll": 0.006, "bend": -0.040}},
-      {"tick": 6, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": 0.72, "bend": 0.68}, "leftLeg": {"roll": -0.050, "pitch": -0.92, "bend": 0.14}, "rightArm": {"pitch": -0.62, "bend": -0.42}, "leftArm": {"pitch": 0.72, "bend": -0.48}, "torso": {"pitch": -0.16, "yaw": -0.028, "roll": 0.006, "bend": -0.035}},
-      {"tick": 9, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": -0.10, "bend": 0.24}, "leftLeg": {"roll": -0.050, "pitch": 0.02, "bend": 0.50}, "rightArm": {"pitch": 0.05, "bend": -0.50}, "leftArm": {"pitch": -0.05, "bend": -0.52}, "torso": {"pitch": -0.18, "yaw": 0.0, "roll": -0.006, "bend": -0.040}},
-      {"tick": 12, "easing": "EASEINOUTSINE", "rightLeg": {"roll": 0.050, "pitch": -0.92, "bend": 0.14}, "leftLeg": {"roll": -0.050, "pitch": 0.72, "bend": 0.68}, "rightArm": {"pitch": 0.72, "bend": -0.48}, "leftArm": {"pitch": -0.62, "bend": -0.42}, "torso": {"pitch": -0.16, "yaw": 0.028, "roll": -0.006, "bend": -0.035}}
-    ]
-  }
+  "name": "pal_fast_run", "author": "MurimRPG",
+  "description": "Committed sprint with compact flight phases and baked upper-body drive",
+  "emote": {"isLoop":true,"returnTick":0,"beginTick":0,"endTick":12,"stopTick":13,"degrees":false,"moves":[
+    {"tick":0,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.050,"pitch":-0.860,"bend":0.130},"leftLeg":{"roll":-0.050,"pitch":0.625,"bend":0.620},"rightArm":{"pitch":0.300,"yaw":-0.050,"roll":0.040,"bend":-0.470},"leftArm":{"pitch":-1.060,"yaw":0.060,"roll":-0.052,"bend":-0.365},"torso":{"pitch":-0.054167,"yaw":0.060,"roll":0.018},"head":{"pitch":0.080000,"yaw":-0.038,"roll":-0.008}},
+    {"tick":2,"easing":"EASEINOUTQUAD","rightLeg":{"roll":0.050,"pitch":-0.345,"bend":0.330},"leftLeg":{"roll":-0.050,"pitch":0.255,"bend":0.675},"rightArm":{"pitch":-0.050,"yaw":-0.030,"roll":0.022,"bend":-0.520},"leftArm":{"pitch":-0.720,"yaw":0.040,"roll":-0.036,"bend":-0.425},"torso":{"pitch":-0.060833,"yaw":0.035,"roll":0.007},"head":{"pitch":0.091667,"yaw":-0.022,"roll":-0.003}},
+    {"tick":3,"easing":"EASEINQUAD","rightLeg":{"roll":0.050,"pitch":0.040,"bend":0.485},"leftLeg":{"roll":-0.050,"pitch":-0.135,"bend":0.230},"rightArm":{"pitch":-0.355,"yaw":-0.012,"roll":0.010,"bend":-0.500},"leftArm":{"pitch":-0.320,"yaw":0.012,"roll":-0.010,"bend":-0.475},"torso":{"pitch":-0.055833,"yaw":0.008,"roll":-0.008},"head":{"pitch":0.082667,"yaw":-0.005,"roll":0.003}},
+    {"tick":5,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.050,"pitch":0.530,"bend":0.640},"leftLeg":{"roll":-0.050,"pitch":-0.715,"bend":0.155},"rightArm":{"pitch":-0.865,"yaw":-0.050,"roll":0.042,"bend":-0.400},"leftArm":{"pitch":0.115,"yaw":0.036,"roll":-0.026,"bend":-0.535},"torso":{"pitch":-0.050833,"yaw":-0.045,"roll":-0.016},"head":{"pitch":0.073333,"yaw":0.029,"roll":0.007}},
+    {"tick":6,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.050,"pitch":0.625,"bend":0.620},"leftLeg":{"roll":-0.050,"pitch":-0.860,"bend":0.130},"rightArm":{"pitch":-1.060,"yaw":-0.060,"roll":0.052,"bend":-0.365},"leftArm":{"pitch":0.300,"yaw":0.050,"roll":-0.040,"bend":-0.470},"torso":{"pitch":-0.054167,"yaw":-0.060,"roll":-0.018},"head":{"pitch":0.080000,"yaw":0.038,"roll":0.008}},
+    {"tick":8,"easing":"EASEINOUTQUAD","rightLeg":{"roll":0.050,"pitch":0.255,"bend":0.675},"leftLeg":{"roll":-0.050,"pitch":-0.345,"bend":0.330},"rightArm":{"pitch":-0.720,"yaw":-0.040,"roll":0.036,"bend":-0.425},"leftArm":{"pitch":-0.050,"yaw":0.030,"roll":-0.022,"bend":-0.520},"torso":{"pitch":-0.060833,"yaw":-0.035,"roll":-0.007},"head":{"pitch":0.091667,"yaw":0.022,"roll":0.003}},
+    {"tick":9,"easing":"EASEINQUAD","rightLeg":{"roll":0.050,"pitch":-0.135,"bend":0.230},"leftLeg":{"roll":-0.050,"pitch":0.040,"bend":0.485},"rightArm":{"pitch":-0.320,"yaw":-0.012,"roll":0.010,"bend":-0.475},"leftArm":{"pitch":-0.355,"yaw":0.012,"roll":-0.010,"bend":-0.500},"torso":{"pitch":-0.055833,"yaw":-0.008,"roll":0.008},"head":{"pitch":0.082667,"yaw":0.005,"roll":-0.003}},
+    {"tick":11,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.050,"pitch":-0.715,"bend":0.155},"leftLeg":{"roll":-0.050,"pitch":0.530,"bend":0.640},"rightArm":{"pitch":0.115,"yaw":-0.036,"roll":0.026,"bend":-0.535},"leftArm":{"pitch":-0.865,"yaw":0.050,"roll":-0.042,"bend":-0.400},"torso":{"pitch":-0.050833,"yaw":0.045,"roll":0.016},"head":{"pitch":0.073333,"yaw":-0.029,"roll":-0.007}},
+    {"tick":12,"easing":"EASEOUTQUAD","rightLeg":{"roll":0.050,"pitch":-0.860,"bend":0.130},"leftLeg":{"roll":-0.050,"pitch":0.625,"bend":0.620},"rightArm":{"pitch":0.300,"yaw":-0.050,"roll":0.040,"bend":-0.470},"leftArm":{"pitch":-1.060,"yaw":0.060,"roll":-0.052,"bend":-0.365},"torso":{"pitch":-0.054167,"yaw":0.060,"roll":0.018},"head":{"pitch":0.080000,"yaw":-0.038,"roll":-0.008}}
+  ]}
 }

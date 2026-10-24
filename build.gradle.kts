@@ -6,6 +6,11 @@ plugins {
 group = "com.murimrpg"
 version = "0.2.0"
 
+// Local Windows development can keep generated files outside OneDrive.
+providers.gradleProperty("murimBuildDir").orNull?.let {
+    layout.buildDirectory.set(file(it))
+}
+
 base { archivesName = "MurimRPG-Fabric" }
 
 repositories {
@@ -48,3 +53,29 @@ tasks.processResources {
 }
 
 tasks.test { useJUnitPlatform() }
+
+// The handover ZIP intentionally omits private GLB and texture assets.
+// Keep the full test task intact; this explicitly named task validates only
+// the source snapshot and writes its own report.
+val sourceSnapshotTest = tasks.register<Test>("sourceSnapshotTest") {
+    group = "verification"
+    description = "Test the source snapshot without the 13 external-asset tests."
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
+    exclude("com/murimrpg/client/MeshyWalkAnimationTest.class")
+    exclude("com/murimrpg/client/render/GlbAnimatedPlayerMeshTest.class")
+    filter {
+        excludeTest("com.murimrpg.client.render.GlbStaticMeshTest", "loadsTheBundledTrainingLogMeshAndBaseColorTexture")
+        excludeTest("com.murimrpg.client.render.GlbStaticMeshTest", "bundlesTheContinuousBarkTextureUsedByTheClientRenderer")
+    }
+    doFirst {
+        logger.lifecycle("SOURCE SNAPSHOT ONLY: 13 external GLB/texture tests are excluded. Full validation remains: test build.")
+    }
+}
+
+tasks.register("sourceSnapshotBuild") {
+    group = "build"
+    description = "Assemble and verify the source-only handover; not full external-asset validation."
+    dependsOn(tasks.assemble, sourceSnapshotTest)
+}

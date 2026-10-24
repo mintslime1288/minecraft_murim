@@ -24,7 +24,12 @@ public abstract class LivingEntityRendererMixin {
                                               PoseStack poses, RenderType renderType, int light, int overlay,
                                               int color, TextureAtlasSprite sprite, int outline,
                                               ModelFeatureRenderer.CrumblingOverlay crumbling) {
-        if (state instanceof AvatarRenderState && (com.murimrpg.client.PalPlayerAnimationIntegration.isActive()
+        // The Wuxia replacement is asked first and answers for the whole frame. When it takes
+        // the frame nothing else submits a body, and when it declines it costs one boolean.
+        if (state instanceof AvatarRenderState wuxia
+                && com.murimrpg.client.render.WuxiaPlayerRenderer.shouldReplace(wuxia)) {
+            com.murimrpg.client.render.WuxiaPlayerRenderer.submit(wuxia, poses, collector);
+        } else if (state instanceof AvatarRenderState && (com.murimrpg.client.PalPlayerAnimationIntegration.isActive()
                 || com.murimrpg.client.PalPlayerAnimationIntegration.isThirdPartyProviderActive())) {
             // PAL has already applied its layered transforms to Mojang's player model.
             // Submit that model unchanged so the legacy GLB/custom-body paths cannot

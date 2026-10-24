@@ -1,7 +1,7 @@
 # Player Animation Library drives layered motion; Bendable Cuboids bends the
 # original Minecraft skin mesh at elbows and knees. No GLB body is rendered.
 # Stable baseline: enable only after the motion set passes manual F5 review.
-enabled: false
+enabled: true
 local-player-only: false
 third-party-provider:
   # Keep MurimRPG's licensed PAL+Bendable Cuboids skin-joint motions as the default.
@@ -10,8 +10,19 @@ third-party-provider:
   prefer-when-installed: false
   mod-id: cpa
 movement:
+  # Separate enter/exit thresholds prevent tiny velocity noise from repeatedly
+  # cross-fading IDLE/WALK or RUN/FAST_RUN and visually breaking a loop.
   moving-threshold: 0.008
+  moving-exit-threshold: 0.004
   fast-run-threshold: 0.13
+  fast-run-exit-threshold: 0.11
+full-body-follow:
+  # PAL exposes the torso and arms as sibling ModelParts. These bounded values
+  # pass some torso rotation into both shoulders so the upper body reads as one chain.
+  enabled: true
+  shoulder-pitch-follow: 0.35
+  shoulder-yaw-follow: 0.55
+  shoulder-roll-follow: 0.30
 airborne:
   rise-velocity-threshold: 0.035
   apex-velocity-threshold: 0.035
@@ -24,3 +35,9 @@ transitions:
 layers:
   locomotion-priority: 200
   combat-priority: 400
+combat:
+  boxing:
+    # Choose one hand once per empty-hand swing; never reroll during a rendered frame.
+    random-hands: true
+    # Three seconds at 20 TPS. This changes only the rendered pose.
+    guard-hold-ticks: 60

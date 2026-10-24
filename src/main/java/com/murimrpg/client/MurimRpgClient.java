@@ -40,6 +40,11 @@ public final class MurimRpgClient implements ClientModInitializer {
         NaturalWalkDiagnostics.register(playerAnimations::reload);
         TrainingDummyGlbRenderer.register();
         ClientLifecycleEvents.CLIENT_STARTED.register(TrainingDummyGlbRenderer::loadResources);
+        // Registered unconditionally, unlike the older GLB path above, because the Wuxia
+        // replacement is meant to run while PAL is the active body. It gates itself entirely on
+        // its own YAML, so with enabled:false this costs one file read at startup and nothing else.
+        ClientLifecycleEvents.CLIENT_STARTED.register(
+                com.murimrpg.client.render.WuxiaPlayerRenderer::loadResources);
         if (!PalPlayerAnimationIntegration.isThirdPartyProviderActive()) {
             ClientLifecycleEvents.CLIENT_STARTED.register(playerAnimations::loadAnimations);
             ClientLifecycleEvents.CLIENT_STARTED.register(AnimatedPlayerGlbRenderer::loadResources);

@@ -50,7 +50,11 @@ public final class NaturalWalkDiagnostics {
                         .then(literal("on").executes(context -> { enabled = true; return report(context.getSource()); }))
                         .then(literal("off").executes(context -> { enabled = false; return report(context.getSource()); }))
                         .then(literal("reload").executes(context -> {
-                            try { reload.run(); context.getSource().sendFeedback(Component.literal("[걷기] 설정과 GLB를 다시 불러왔습니다.")); return 1; }
+                            try {
+                                reload.run();
+                                var client = Minecraft.getInstance();
+                                com.murimrpg.client.render.WuxiaPlayerRenderer.loadResources(client);
+                                context.getSource().sendFeedback(Component.literal("[걷기] 설정과 GLB를 다시 불러왔습니다.")); return 1; }
                             catch (RuntimeException error) { context.getSource().sendError(Component.literal("[걷기] 다시 불러오기 실패: " + error.getMessage())); return 0; }
                         }))
                         .then(literal("mode")
@@ -70,6 +74,7 @@ public final class NaturalWalkDiagnostics {
                 + " 모드=" + mode.name().toLowerCase(java.util.Locale.ROOT)
                 + " 방식=네이티브_절차보행"
                 + " 전체모델=" + com.murimrpg.client.render.AnimatedPlayerGlbRenderer.status()
+                + " | 무협모델=" + com.murimrpg.client.render.WuxiaPlayerRenderer.status()
                 + " | 관절리그=" + com.murimrpg.client.render.ArticulatedPlayerRenderer.status()
                 + " | 네이티브관절=" + com.murimrpg.client.render.ModelPartArticulatedPlayerRenderer.status()
                 + " 진단=" + debug + " 호출=" + calls + " " + last));

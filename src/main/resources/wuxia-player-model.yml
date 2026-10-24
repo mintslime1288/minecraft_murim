@@ -1,0 +1,98 @@
+# Wuxia rigged player replacement (visual only).
+#
+# This renderer replaces ONLY the drawn player body for your own character in third person.
+# It never touches position, velocity, collision, hitbox, eye height, interaction range,
+# server movement or attack judgement.
+#
+# Rollback: set enabled to false and restart the client. Nothing else needs to change and no
+# file needs to be deleted. The PAL + Bendable Cuboids body returns exactly as it was.
+#
+# Applied at: client start, and on /murimwalk reload. Editing this file while the game is
+# running does nothing until one of those happens.
+enabled: false
+
+# Resource path of the rigged GLB inside the mod jar.
+model: "murimrpg:models_glb/player/wuxia_rigged_all.glb"
+
+scale:
+  # The drawn height in blocks. 1.8 matches the player hitbox, which is what was asked for.
+  # Note that Mojang's own player model is drawn 2.0 blocks tall (32 model pixels), so at 1.8
+  # this character stands slightly shorter than other players. Set 2.0 to match them visually.
+  target-height-blocks: 1.8
+  # Measured bind-pose height of the supplied asset, in metres, after CPU skinning.
+  # Do not change this unless the GLB itself is re-exported.
+  source-height-metres: 1.7
+
+placement:
+  # LivingEntityRenderer submits custom geometry from its humanoid model stack, whose origin
+  # sits above the feet. F5 hitbox comparison confirmed a 1.501-block downward correction,
+  # matching the existing ArticulatedPlayerRenderer calibration for this submission point.
+  ground-offset-blocks: 1.501
+  # The asset faces the opposite way from Minecraft's avatar forward axis.
+  yaw-degrees: 180
+  # Minecraft humanoid render space is Y-down; the GLB is Y-up.
+  flip-vertical: true
+
+clips:
+  # Names exactly as they appear inside the GLB. A missing name disables the renderer at load
+  # time rather than silently substituting another clip.
+  idle: "Idle_5"
+  walk: "Walking"
+  run: "Running"
+  crouch: "Cautious_Crouch_Walk_Forward"
+  jump: "Regular_Jump"
+  # Authored clip lengths in seconds, read from the asset.
+  idle-seconds: 1.9167
+  walk-seconds: 1.0833
+  run-seconds: 0.7083
+  crouch-seconds: 1.2083
+
+cadence:
+  # Metres of ground covered by one full two-step cycle of each clip, measured from the planted
+  # toe joint over 121 uniform samples. Clip phase advances by distance / stride, so the planted
+  # foot stays planted at any movement speed instead of sliding.
+  walk-stride-metres: 1.5408
+  run-stride-metres: 1.4854
+  crouch-stride-metres: 1.5801
+
+animation:
+  transition-seconds: 0.18
+  # Blocks per second below which the player counts as standing still.
+  movement-threshold: 0.05
+  # Blocks per second at or above which the run clip is used even without sprinting.
+  run-speed-threshold: 4.9
+  # Upper bound on clip playback rate. Minecraft walks at 4.317 blocks/s while this walk clip
+  # was captured at 1.42 m/s, so zero foot slip needs about 3.0x and sprinting about 2.7x.
+  # Lowering this calms the legs down but reintroduces foot slide; the renderer reports the
+  # resulting slip through /murimwalk so the trade is measurable rather than guessed.
+  maximum-playback-rate: 3.2
+  jump:
+    enabled: true
+    # Seconds of airborne time the sub-range is stretched over.
+    seconds: 0.62
+    # The authored jump clip contains three consecutive hops. Only the first one is used.
+    # Measured: feet leave the ground at phase 0.050 and land again at 0.283.
+    clip-start: 0.0
+    clip-end: 0.35
+
+compatibility:
+  # The rigged mesh has its own skeleton. Minecraft's armour models and the held-item layer are
+  # positioned from Mojang's player model, not from this one, so with these false the renderer
+  # stands aside for any frame where the player is holding or wearing something and the existing
+  # PAL body draws instead, complete with its equipment. Equipment is never hidden.
+  #
+  # Turning either of these on does NOT make equipment follow the mesh. It only stops the
+  # renderer from standing aside, which leaves armour and held items attached to a body that is
+  # no longer drawn where they are. Leave them false unless deliberately testing that.
+  allow-held-items: false
+  allow-armour: false
+
+validation:
+  # Checked at load time across this many uniform samples of every configured clip. Any clip
+  # that produces a non-finite coordinate or steps outside these bounds disables the whole
+  # renderer and the existing path keeps the frame.
+  samples: 121
+  minimum-skinned-height: 1.30
+  maximum-skinned-height: 2.00
+  maximum-skinned-width: 1.60
+  maximum-skinned-depth: 1.60
