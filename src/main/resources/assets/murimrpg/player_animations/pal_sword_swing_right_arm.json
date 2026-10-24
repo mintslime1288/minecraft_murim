@@ -1,0 +1,65 @@
+{
+  "name": "pal_sword_swing_right_arm",
+  "author": "MurimRPG",
+  "description": "Right-arm-only sword cut. Derived byte-for-byte from the clip the user previewed on 2026-10-24 by renaming it; the leftArm and torso keys of pal_sword_swing are intentionally absent so an attack cannot move the arm that carries the scabbard.",
+  "emote": {
+    "isLoop": false,
+    "returnTick": 0,
+    "beginTick": 0,
+    "endTick": 11,
+    "stopTick": 12,
+    "degrees": false,
+    "moves": [
+      {
+        "tick": 0,
+        "easing": "EASEOUTQUAD",
+        "rightArm": {
+          "pitch": 0.1,
+          "yaw": -0.05,
+          "roll": 0.04,
+          "bend": -0.2
+        }
+      },
+      {
+        "tick": 3,
+        "easing": "EASEINQUAD",
+        "rightArm": {
+          "pitch": -0.62,
+          "yaw": -0.58,
+          "roll": 0.3,
+          "bend": -0.52
+        }
+      },
+      {
+        "tick": 5,
+        "easing": "EASEOUTQUAD",
+        "rightArm": {
+          "pitch": -1.38,
+          "yaw": 0.34,
+          "roll": -0.28,
+          "bend": -0.12
+        }
+      },
+      {
+        "tick": 8,
+        "easing": "EASEINOUTQUAD",
+        "rightArm": {
+          "pitch": -0.72,
+          "yaw": 0.12,
+          "roll": -0.08,
+          "bend": -0.28
+        }
+      },
+      {
+        "tick": 11,
+        "easing": "EASEINOUTSINE",
+        "rightArm": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0,
+          "bend": 0.0
+        }
+      }
+    ]
+  }
+}

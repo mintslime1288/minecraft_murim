@@ -54,6 +54,7 @@ public final class NaturalWalkDiagnostics {
                                 reload.run();
                                 var client = Minecraft.getInstance();
                                 com.murimrpg.client.render.WuxiaPlayerRenderer.loadResources(client);
+                                com.murimrpg.client.render.scabbard.VirtualScabbardRenderer.loadResources(client);
                                 context.getSource().sendFeedback(Component.literal("[걷기] 설정과 GLB를 다시 불러왔습니다.")); return 1; }
                             catch (RuntimeException error) { context.getSource().sendError(Component.literal("[걷기] 다시 불러오기 실패: " + error.getMessage())); return 0; }
                         }))
@@ -75,6 +76,7 @@ public final class NaturalWalkDiagnostics {
                 + " 방식=네이티브_절차보행"
                 + " 전체모델=" + com.murimrpg.client.render.AnimatedPlayerGlbRenderer.status()
                 + " | 무협모델=" + com.murimrpg.client.render.WuxiaPlayerRenderer.status()
+                + " | 검집=" + com.murimrpg.client.render.scabbard.VirtualScabbardRenderer.status()
                 + " | 관절리그=" + com.murimrpg.client.render.ArticulatedPlayerRenderer.status()
                 + " | 네이티브관절=" + com.murimrpg.client.render.ModelPartArticulatedPlayerRenderer.status()
                 + " 진단=" + debug + " 호출=" + calls + " " + last));

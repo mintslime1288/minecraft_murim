@@ -45,6 +45,10 @@ public final class MurimRpgClient implements ClientModInitializer {
         // its own YAML, so with enabled:false this costs one file read at startup and nothing else.
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 com.murimrpg.client.render.WuxiaPlayerRenderer::loadResources);
+        // Registered unconditionally for the same reason as the renderer above: the virtual
+        // scabbard runs while PAL owns the body, and it gates itself entirely on its own YAML.
+        ClientLifecycleEvents.CLIENT_STARTED.register(
+                com.murimrpg.client.render.scabbard.VirtualScabbardRenderer::loadResources);
         if (!PalPlayerAnimationIntegration.isThirdPartyProviderActive()) {
             ClientLifecycleEvents.CLIENT_STARTED.register(playerAnimations::loadAnimations);
             ClientLifecycleEvents.CLIENT_STARTED.register(AnimatedPlayerGlbRenderer::loadResources);

@@ -198,7 +198,12 @@ public final class PalPlayerAnimationIntegration {
             String animation;
             Animation.LoopType loopType;
             if (compatible && avatar.swinging && sword) {
-                animation = "pal_sword_swing";
+                // The right-arm-only variant leaves the arm that carries the virtual scabbard
+                // alone, so an attack cannot swing it. If that asset is missing the original
+                // clip still plays, which keys leftArm and torso as before.
+                animation = com.murimrpg.client.render.scabbard.VirtualScabbardRenderer.rightArmOnlyAttack()
+                        && clip("pal_sword_swing_right_arm", Animation.LoopType.PLAY_ONCE) != null
+                        ? "pal_sword_swing_right_arm" : "pal_sword_swing";
                 loopType = Animation.LoopType.PLAY_ONCE;
             } else {
                 boolean emptyHands = avatar.getMainHandItem().isEmpty() && avatar.getOffhandItem().isEmpty();

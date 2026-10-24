@@ -1,0 +1,48 @@
+# Single-slot sword with a virtual scabbard (visual only).
+#
+# One sword in one hotbar slot. When it is in the main hand, the sword draws in that hand and a
+# scabbard draws in the empty off hand. The scabbard is NOT an item: no inventory slot, no server
+# item, no drop, no stack count, no durability, no hitbox and no attack judgement. It is an entry
+# in the client's item-model registry that the renderer draws into the off hand.
+#
+# Rollback: set enabled to false and restart the client, or run /murimwalk reload. Nothing else
+# needs changing and no file needs deleting. The sword keeps rendering exactly as vanilla does.
+#
+# Applied at: client start, and on /murimwalk reload. Editing this file while the game runs does
+# nothing until one of those happens.
+enabled: false
+
+# The sword is recognised by the minecraft:item_model identifier it carries, not by its base
+# item. Matching minecraft:iron_sword itself would hang a scabbard off anyone holding any iron
+# sword; matching the model identifier means only this sword gets one.
+#
+#   /give @s minecraft:iron_sword[minecraft:item_model="murimrpg:top_straight_sword"] 1
+sword-item-model: "murimrpg:top_straight_sword"
+
+# The scabbard model to draw. It must exist in the loaded resources: without it the model
+# manager returns Minecraft's missing-model placeholder and the renderer draws nothing rather
+# than hanging a black and magenta cube off the hand. That case is logged once.
+scabbard-item-model: "murimrpg:extended_black_scabbard"
+
+# Match the whole minecraft:swords item tag instead of the model identifier above. Off by
+# default: it would put the scabbard in the hand of anyone holding any sword, including the
+# existing wooden sword.
+match-sword-tag-instead: false
+
+render:
+  # Each view can be turned off on its own, which is the quickest way to tell the two apart if
+  # only one of them looks wrong in game.
+  first-person: true
+  third-person: true
+
+attack:
+  # Play the right-arm-only sword clip so an attack cannot swing the arm that carries the
+  # scabbard. With this false the original pal_sword_swing plays, which also keys leftArm and
+  # torso, and the off arm follows the attack.
+  #
+  # Walking, running and jumping arm motion is unaffected either way: this only selects which
+  # attack clip the PAL combat layer plays.
+  right-arm-only: true
+
+# Log the visibility decision to the client log and to /murimwalk. Useful once, noisy after.
+diagnostics: false
