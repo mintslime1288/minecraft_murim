@@ -70,32 +70,24 @@ LEG = [(12, "Leg"), (9, "Thigh"), (6, "Knee"),
        (4, "Shin"), (2, "Ankle"), (0, "Foot")]
 
 
-def weights_at(position):
-    x, y, _ = position
-    ax = abs(x)
-    if y >= 12 and ax > 4:
-        side = "right" if x > 0 else "left"
-        limb = interpolate([(height, side + name) for height, name in ARM], y)
-        blend = min(1.0, max(0.0, (ax - 4) / 1.5))
-        torso = interpolate(TORSO, y)
-        result = {name: value * blend for name, value in limb.items()}
-        for name, value in torso.items():
-            result[name] = result.get(name, 0) + value * (1 - blend)
-    elif y >= 12:
+def weights_at(position, region):
+    _, y, _ = position
+    if region == "core":
         result = interpolate(TORSO, y)
+    elif region.endswith("Arm"):
+        side = region[:-3]
+        limb = interpolate([(height, side + name) for height, name in ARM], y)
+        blend = min(1.0, max(0.0, (24 - y) / 2))
+        result = {name: value * blend for name, value in limb.items()}
+        result["chest"] = result.get("chest", 0) + 1 - blend
+    elif region.endswith("Leg"):
+        side = region[:-3]
+        limb = interpolate([(height, side + name) for height, name in LEG], y)
+        blend = min(1.0, max(0.0, (12 - y) / 2))
+        result = {name: value * blend for name, value in limb.items()}
+        result["waist"] = result.get("waist", 0) + 1 - blend
     else:
-        blend = min(1.0, max(0.0, 12 - y))
-        if x > 0:
-            side_shares = {"right": 1.0}
-        elif x < 0:
-            side_shares = {"left": 1.0}
-        else:
-            side_shares = {"right": 0.5, "left": 0.5}
-        result = {"waist": 1 - blend} if blend < 1 else {}
-        for side, share in side_shares.items():
-            for name, value in interpolate(
-                    [(height, side + suffix) for height, suffix in LEG], y).items():
-                result[name] = result.get(name, 0) + value * share * blend
+        raise AssertionError(region)
     result = {name: round(value, 6) for name, value in result.items()
               if value > 0.000001}
     if len(result) > 4:
@@ -208,7 +200,7 @@ def volumes(source):
     return elements, shapes
 
 
-def make_base(shapes):
+def make_base(shapes, label):
     solids = {}
     for name, (_, (x0,y0,z0,x1,y1,z1)) in shapes.items():
         for x in range(x0,x1):
@@ -217,7 +209,7 @@ def make_base(shapes):
                     key = (x,y,z)
                     assert key not in solids, (key, name, solids.get(key))
                     solids[key] = name
-    result = mesh("connected_player_base")
+    result = mesh(label + "_continuous_base")
     builder = MeshBuilder(result)
     for (x,y,z), name in solids.items():
         source, bounds = shapes[name]
@@ -266,7 +258,12 @@ def build(source):
     assert source["meta"]["model_format"] == "bedrock"
     assert source["resolution"] == {"width":64,"height":64}
     originals, shapes = volumes(source)
-    meshes = [make_base(shapes)]
+    # Keep each limb independent at the shoulders and crotch. Within a limb,
+    # the surface stays one continuous weighted mesh across elbow or knee.
+    meshes = [make_base({name: shapes[name] for name in ("head", "body")},
+                        "core")]
+    for name in ("rightArm", "leftArm", "rightLeg", "leftLeg"):
+        meshes.append(make_base({name: shapes[name]}, name))
     for name in ("head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"):
         meshes.append(make_overlay(name, originals[name + "_outer"]))
 
@@ -295,7 +292,10 @@ def build(source):
     for item in meshes:
         prefix = item["uuid"][:6] + ":"
         for vid, point in item["vertices"].items():
-            for name, value in weights_at(point).items():
+            region = item["name"].split("_")[0]
+            if region in ("head", "body"):
+                region = "core"
+            for name, value in weights_at(point, region).items():
                 bones[name]["vertex_weights"][prefix + vid] = value
         armature["children"].append(item["uuid"])
 
@@ -342,10 +342,24 @@ def validate(project):
         if item["type"] != "mesh":
             continue
         assert item["vertices"] and item["faces"]
+        edges = Counter()
+        parents = {key: key for key in item["vertices"]}
+        def find(key):
+            while parents[key] != key:
+                key = parents[key]
+            return key
         for face in item["faces"].values():
             assert len(face["vertices"])==4
             assert all(key in item["vertices"] for key in face["vertices"])
             assert set(face["vertices"])==set(face["uv"])
+            if item["name"].endswith("_continuous_base"):
+                corners = face["vertices"]
+                for a, b in zip(corners, corners[1:] + corners[:1]):
+                    edges[tuple(sorted((a, b)))] += 1
+                    parents[find(a)] = find(b)
+        if edges:
+            assert all(count == 2 for count in edges.values()), item["name"]
+            assert len({find(key) for key in parents}) == 1, item["name"]
         for vid in item["vertices"]:
             key = item["uuid"][:6] + ":" + vid
             total = sum(b.get("vertex_weights",{}).get(key,0)
