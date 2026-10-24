@@ -1,5 +1,32 @@
 # 플레이어 Blockbench 애니메이션 템플릿
 
+## 지금 개발 게임에서 쓰는 기본 플레이어 편집본
+
+`player_current_java_editable.bbmodel`은 현재 활성화된 Java 기본 플레이어
+체형(넓은 팔)을 Blockbench에서 수정하기 위한 사본이다. 머리·몸통·좌우 팔·
+좌우 다리와 현재 옵션에서 켜진 모자·재킷·소매·바지 겉레이어를 포함한다.
+총 13개 큐브와 12개 뼈이며, 손 위치 검토용 `rightItem`·`leftItem` 뼈도 있다.
+`current_player_uv.png`는 직접 그린 중립 편집 텍스처다.
+
+집 PC 개발 계정 `Player716`의 기록된 UUID와 Minecraft 26.2의 기본 스킨
+선택 규칙을 대조하면 넓은 팔 `Makena` 스킨이다. 이 컴퓨터에 설치된
+Minecraft JAR에서 해당 PNG를 읽어 만든
+`local/player_current_dev_skin.bbmodel`은 **로컬 전용**이다. 그 파일을
+Blockbench에서 열면 현재 개발 게임의 기본 스킨 모습으로 직접 수정할 수
+있다. Minecraft 원본 스킨 이미지를 포함하므로 GitHub에는 올리지 않는다.
+사용자가 다른 계정이나 별도 스킨으로 게임에 접속하면 해당 계정의 64×64
+스킨으로 교체해야 한다.
+
+이 편집본은 게임에서 지금 사용하는 **바닐라 지오메트리의 사본**이다.
+PAL과 Bendable Cuboids가 게임 실행 중 팔꿈치·무릎을 구부리는 변형까지
+`.bbmodel` 하나에 저장된 것은 아니다. 파일을 수정해도 게임에 자동 반영되지
+않으며, 수정한 `.bbmodel`을 전달받아 Java 렌더러/모션과 대조해 적용해야 한다.
+게임 설정과 서버 데이터는 변경하지 않았다.
+
+아래의 `player_animation_wide/slim.bbmodel`은 먼저 만든 일반 제작 템플릿으로
+보존한다. 현재 게임 외형을 고치려면 위의 `player_current_dev_skin.bbmodel`을
+사용한다.
+
 사용자가 직접 플레이어 모션을 만들기 위한 편집 원본이다. Blockbench의
 **File → New → Bedrock Player Model**에서 만든 기본 플레이어 모델을
 `.bbmodel`로 저장했다. `player_animation_wide.bbmodel`은 4px 팔,
