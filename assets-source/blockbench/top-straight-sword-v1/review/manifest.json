@@ -1,0 +1,56 @@
+{
+  "status": "BLOCKBENCH_REVIEW_ASSETS_NOT_INSTALLED_IN_GAME",
+  "source_sha256": "ea8a062aed98c0182205e0d3650b6c578750673c9ccdd2702497902ed32b3cd7",
+  "source_pixels": [
+    1024,
+    1024
+  ],
+  "source_selection": {
+    "top_sword_tip": [
+      43,
+      447
+    ],
+    "top_sword_pommel": [
+      909,
+      46
+    ],
+    "top_scabbard_mouth": [
+      837,
+      176
+    ],
+    "top_scabbard_chape": [
+      328,
+      409
+    ],
+    "lower_ornate_swords_used": false
+  },
+  "dimensions_model_units": {
+    "blade_length": 21.5,
+    "scabbard_length": 25.2,
+    "sheath_to_blade_ratio": 1.172
+  },
+  "elements": {
+    "sword": 1668,
+    "scabbard": 1134
+  },
+  "groups": {
+    "sword": {
+      "01_Steel_blade_faceted": 720,
+      "02_Low_fullers": 112,
+      "03_Blade_ricasso": 1,
+      "04_Brass_ferrule": 1,
+      "05_Brass_oval_guard": 96,
+      "06_Black_wrapped_grip": 360,
+      "07_Raised_leather_spiral": 342,
+      "08_Brass_pommel": 36
+    },
+    "scabbard": {
+      "01_Black_lacquer_body": 890,
+      "02_Raised_side_bead": 2,
+      "03_Long_brass_chape": 112,
+      "04_Mouth_band": 48,
+      "05_Brass_throat": 80,
+      "06_Throat_latch": 2
+    }
+  }
+}

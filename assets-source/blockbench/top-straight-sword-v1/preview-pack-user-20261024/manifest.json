@@ -1,0 +1,81 @@
+{
+  "status": "PREVIEW_PACK_NOT_APPLIED",
+  "base_item_mainhand": "minecraft:iron_sword",
+  "mainhand_item_model": "murimrpg:top_straight_sword",
+  "base_item_offhand": "minecraft:stick",
+  "offhand_item_model": "murimrpg:extended_black_scabbard",
+  "sword": {
+    "file": "top_straight_sword.bbmodel",
+    "sha256": "dbd84bc5afc8a48eb173e1dee69c8a8ff15d1542658baef46dd849fd5471965d",
+    "cubes": 1668,
+    "display_scale": {
+      "thirdperson_righthand": null,
+      "thirdperson_lefthand": [
+        0.72,
+        0.72,
+        0.72
+      ],
+      "firstperson_righthand": [
+        0.65,
+        0.65,
+        0.65
+      ],
+      "firstperson_lefthand": [
+        0.65,
+        0.65,
+        0.65
+      ],
+      "ground": [
+        0.43,
+        0.43,
+        0.43
+      ],
+      "gui": [
+        0.55,
+        0.55,
+        0.55
+      ],
+      "fixed": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    }
+  },
+  "scabbard": {
+    "file": "extended_black_scabbard.bbmodel",
+    "sha256": "8a4e2d254931c6004a2d62afb60ae097c03fc645efe8d344c3b5c270a2a2bfd0",
+    "cubes": 1134,
+    "display_scale": {
+      "thirdperson_righthand": null,
+      "thirdperson_lefthand": null,
+      "firstperson_righthand": [
+        0.65,
+        0.65,
+        0.65
+      ],
+      "firstperson_lefthand": [
+        0.65,
+        0.65,
+        0.65
+      ],
+      "ground": [
+        0.43,
+        0.43,
+        0.43
+      ],
+      "gui": [
+        0.55,
+        0.55,
+        0.55
+      ],
+      "fixed": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    }
+  },
+  "animation": "PAL sword clip with only original rightArm keys",
+  "zip_sha256": "c6ab062f87e2e0c97103d1d1201800b8ebdb778a81a1b8a0fca441703e81d3b9"
+}
