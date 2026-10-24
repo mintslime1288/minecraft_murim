@@ -13,6 +13,7 @@ import com.murimrpg.domain.PlayerProfile;
 import com.murimrpg.domain.PromotionResult;
 import com.murimrpg.domain.RealmProgressView;
 import com.murimrpg.domain.CurrencyType;
+import com.murimrpg.domain.GanghoCommandLayout;
 import com.murimrpg.service.InventoryCurrencyService;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -32,24 +33,19 @@ public final class CommandRegistry {
 
     public void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> {
-            dispatcher.register(root("gangho"));
-            dispatcher.register(root("강호"));
-            dispatcher.register(root("murim"));
+            GanghoCommandLayout.ROOT_ALIASES.forEach(name -> dispatcher.register(root(name)));
             dispatcher.register(literal("내정보").executes(this::openProfile));
             dispatcher.register(literal("경지").executes(this::realm));
-            dispatcher.register(literal("문파").executes(this::openSect));
+            dispatcher.register(sectBranch("문파"));
             dispatcher.register(literal("화폐").executes(this::currency));
             dispatcher.register(literal("money").executes(this::currency));
             dispatcher.register(currencyAdmin());
             dispatcher.register(trainingItemAdmin());
             dispatcher.register(literal("메뉴").executes(this::menu));
             dispatcher.register(literal("menu").executes(this::menu));
-            dispatcher.register(literal("무공").executes(this::openMartialArts));
+            dispatcher.register(martialBranch("무공"));
             dispatcher.register(literal("내공").executes(this::qi));
             dispatcher.register(literal("운기조식").executes(this::meditate));
-            for (String alias : java.util.List.of("퀘스트", "기연", "도감", "지도", "지역", "길찾기")) {
-                dispatcher.register(literal(alias).executes(this::planned));
-            }
         });
     }
 
@@ -123,48 +119,54 @@ public final class CommandRegistry {
     }
 
     private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> root(String name) {
-        return literal(name).executes(this::openProfile)
-                .then(literal("help").executes(this::help)).then(literal("도움말").executes(this::help))
-                .then(literal("info").executes(this::openProfile)).then(literal("내정보").executes(this::openProfile))
-                .then(literal("status").executes(this::profile))
-                .then(literal("realm").executes(this::realm)).then(literal("경지").executes(this::realm))
-                .then(literal("cultivate").executes(this::cultivate)).then(literal("돌파").executes(this::cultivate))
-                .then(literal("sect").executes(this::openSect)
-                        .then(literal("list").executes(this::sectList))
-                        .then(literal("join").then(literal("huashan").executes(this::joinHuashan)))
-                        .then(literal("가입").then(literal("화산파").executes(this::joinHuashan)))
-                        .then(literal("promote").executes(this::sectPromote)))
-                .then(literal("문파").executes(this::openSect).then(literal("목록").executes(this::sectList))
-                        .then(literal("가입").then(literal("화산파").executes(this::joinHuashan)))
-                        .then(literal("승급").executes(this::sectPromote)))
-                .then(literal("martialarts").executes(this::openMartialArts)).then(literal("무공").executes(this::openMartialArts))
-                .then(literal("qi").executes(this::qi)).then(literal("내공").executes(this::qi))
-                .then(literal("meditate").executes(this::meditate)).then(literal("운기조식").executes(this::meditate))
-                .then(characterBranch("character", "view", "reroll", "confirm"))
-                .then(characterBranch("캐릭터", "보기", "리롤", "확정"))
-                .then(literal("quest").executes(this::planned)).then(literal("퀘스트").executes(this::planned))
-                .then(literal("encounter").executes(this::planned)).then(literal("기연").executes(this::planned))
-                .then(literal("codex").executes(this::planned)).then(literal("도감").executes(this::planned))
-                .then(literal("map").executes(this::planned)).then(literal("지도").executes(this::planned))
-                .then(literal("region").executes(this::planned)).then(literal("지역").executes(this::planned))
-                .then(literal("route").executes(this::planned)).then(literal("길찾기").executes(this::planned))
-                .then(literal("admin").requires(this::isOperator)
-                        .then(literal("save").executes(this::save))
-                        .then(literal("testprogress")
-                                .then(literal("prepare").executes(this::prepareTestProgress))
-                                .then(literal("clear").executes(this::clearTestProgress)))
-                        .then(requirementBranch())
-                        .then(literal("addexp").then(argument("amount", LongArgumentType.longArg(1)).executes(this::addExp))));
+        return literal(name).executes(this::menu).then(literal("도움말").executes(this::help))
+                .then(infoBranch()).then(sectBranch("문파")).then(martialBranch("무공"))
+                .then(adventureBranch()).then(economyBranch()).then(adminBranch("관리"));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> infoBranch() {
+        return literal("정보").executes(this::openProfile).then(literal("내정보").executes(this::openProfile))
+                .then(literal("상태").executes(this::profile)).then(literal("경지").executes(this::realm))
+                .then(literal("돌파").executes(this::cultivate)).then(characterBranch("캐릭터", "보기", "리롤", "확정"));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> sectBranch(String name) {
+        return literal(name).executes(this::openSect).then(literal("목록").executes(this::sectList))
+                .then(literal("가입").then(literal("화산파").executes(this::joinHuashan)))
+                .then(literal("승급").executes(this::sectPromote));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> martialBranch(String name) {
+        return literal(name).executes(this::openMartialArts).then(literal("내공").executes(this::qi))
+                .then(literal("운기조식").executes(this::meditate));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> adventureBranch() {
+        return literal("모험").then(literal("퀘스트").executes(this::planned)).then(literal("기연").executes(this::planned))
+                .then(literal("도감").executes(this::planned)).then(literal("지도").executes(this::planned))
+                .then(literal("지역").executes(this::planned)).then(literal("길찾기").executes(this::planned));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> economyBranch() {
+        return literal("경제").then(literal("화폐").executes(this::currency));
+    }
+
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> adminBranch(String name) {
+        return literal(name).requires(this::isOperator).then(literal("저장").executes(this::save))
+                .then(literal("경지테스트").then(literal("준비").executes(this::prepareTestProgress))
+                        .then(literal("초기화").executes(this::clearTestProgress)))
+                .then(requirementBranch()).then(literal("경험치추가")
+                        .then(argument("수량", LongArgumentType.longArg(1)).executes(this::addExp)));
     }
 
     private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> requirementBranch() {
-        var grant = literal("grant");
-        var revoke = literal("revoke");
+        var grant = literal("부여");
+        var revoke = literal("제거");
         for (String id : context.progression().requirementIds().stream().sorted().toList()) {
             grant.then(literal(id).executes(command -> requirement(command, id, true)));
             revoke.then(literal(id).executes(command -> requirement(command, id, false)));
         }
-        return literal("requirement").then(grant).then(revoke);
+        return literal("조건").then(grant).then(revoke);
     }
 
     private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> characterBranch(
@@ -181,7 +183,13 @@ public final class CommandRegistry {
     }
 
     private int help(CommandContext<CommandSourceStack> command) {
-        send(command.getSource(), "[강호] /강호 <내정보|경지|돌파|문파|무공|내공|운기조식|캐릭터>");
+        CommandSourceStack source = command.getSource();
+        send(source, "[강호] /강호 <" + String.join("|", GanghoCommandLayout.GROUPS) + ">");
+        send(source, "[정보] /강호 정보 <내정보|상태|경지|돌파|캐릭터>");
+        send(source, "[문파] /강호 문파 <목록|가입 화산파|승급>");
+        send(source, "[무공] /강호 무공 <내공|운기조식>");
+        send(source, "[모험] /강호 모험 <퀘스트|기연|도감|지도|지역|길찾기>");
+        send(source, "[관리] OP 전용: /강호 관리 <저장|경지테스트|조건|경험치추가>");
         return 1;
     }
 
