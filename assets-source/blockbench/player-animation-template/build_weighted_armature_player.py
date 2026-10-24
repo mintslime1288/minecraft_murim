@@ -275,8 +275,14 @@ def build(source):
         "name": "murim_player_armature", "children": [], "export": True,
         "locked": False, "scope": 0,
     }
-    bones = {name: bone(name, origin, length, index)
-             for index, (name, _, origin, length) in enumerate(BONE_SPEC)}
+    # Armature bone origins are LOCAL to their parent. BONE_SPEC stores the
+    # intended model-space joint locations so each child needs the difference.
+    world_origins = {name: origin for name, _, origin, _ in BONE_SPEC}
+    bones = {}
+    for index, (name, parent, origin, length) in enumerate(BONE_SPEC):
+        parent_origin = world_origins[parent] if parent else (0, 0, 0)
+        local_origin = tuple(a - b for a, b in zip(origin, parent_origin))
+        bones[name] = bone(name, local_origin, length, index)
     hierarchy = {name: [] for name in bones}
     for name, parent, _, _ in BONE_SPEC:
         if parent:
@@ -314,6 +320,14 @@ def validate(project):
     elements = project["elements"]
     ids = [entry["uuid"] for entry in elements]
     assert len(ids)==len(set(ids))
+    bones = {entry["name"]: entry for entry in elements
+             if entry["type"] == "armature_bone"}
+    world_origins = {name: origin for name, _, origin, _ in BONE_SPEC}
+    for name, parent, expected, _ in BONE_SPEC:
+        parent_origin = world_origins[parent] if parent else (0, 0, 0)
+        resolved = tuple(a + b for a, b in
+                         zip(bones[name]["origin"], parent_origin))
+        assert resolved == expected, (name, resolved, expected)
     used = []
     def walk(entries):
         for entry in entries:
