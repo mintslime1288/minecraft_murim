@@ -1,5 +1,17 @@
 # 플레이어 Blockbench 애니메이션 템플릿
 
+## 어깨 위치 교차 v8 (2026-10-25)
+
+`player_current_weighted_walk_translated_shoulders.bbmodel`은 공개 중립
+스킨, 상위 작업 폴더의
+`플레이어_Blockbench_수정용/현재_플레이어_걷기_어깨위치교차_v8.bbmodel`은
+현재 스킨 편집본이다. Blockbench에서 `걷기_어깨위치교차_1.2초`를 연다.
+양쪽 어깨 연결부의 앞뒤 **위치**가 번갈아 바뀌며 팔 관절 회전과
+몸통 이동은 v4 그대로다. 고정된 쇄골 Y 회전을 0으로 맞춰 위치 이동이
+한쪽으로 치우치지 않게 했다. 아래 v7은 끝점을 연결 관절 회전으로
+바꾼 중간 시안이며 사용자가 요청한 위치 이동과 달랐다.
+`TRANSLATED_SHOULDERS_V8.md`에 값과 확인 방법을 기록했다.
+
 ## 어깨 끝점 교차 v7 (2026-10-25)
 
 `player_current_weighted_walk_crossed_shoulders.bbmodel`은 공개 중립 스킨,
