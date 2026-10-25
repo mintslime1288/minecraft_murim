@@ -62,30 +62,62 @@ def interpolate(points, y):
     raise AssertionError(y)
 
 
-TORSO = [(26, "head"), (24, "neck"), (20, "chest"),
-         (16, "body"), (12, "waist")]
-ARM = [(24, "Arm"), (21, "UpperArm"), (18, "Elbow"),
-       (16, "Forearm"), (13, "Wrist"), (12, "Hand")]
-LEG = [(12, "Leg"), (9, "Thigh"), (6, "Knee"),
-       (4, "Shin"), (2, "Ankle"), (0, "Foot")]
+BODY_BANDS = (12, 13, 18, 19, 20, 24)
+HEAD_BANDS = (24, 25, 26, 32)
+ARM_BANDS = (12, 13, 17, 18, 19, 23, 24)
+LEG_BANDS = (0, 1, 2, 5, 6, 7, 11, 12)
+
+
+def limb_weights(side, kind, y):
+    """Rigid shaft surfaces, with a two-pixel skin transition at each joint."""
+    if kind == "Arm":
+        if y >= 23:
+            return interpolate([(24, "chest"), (23, side + "UpperArm")], y)
+        if y >= 19:
+            return {side + "UpperArm": 1.0}
+        if y >= 17:
+            return interpolate([(19, side + "UpperArm"),
+                                (17, side + "Forearm")], y)
+        if y >= 13:
+            return {side + "Forearm": 1.0}
+        return interpolate([(13, side + "Forearm"),
+                            (12, side + "Hand")], y)
+    if y >= 11:
+        return interpolate([(12, "waist"), (11, side + "Thigh")], y)
+    if y >= 7:
+        return {side + "Thigh": 1.0}
+    if y >= 5:
+        return interpolate([(7, side + "Thigh"),
+                            (5, side + "Shin")], y)
+    if y >= 2:
+        return {side + "Shin": 1.0}
+    return interpolate([(2, side + "Shin"), (1, side + "Foot")], y)
+
+
+def core_weights(y):
+    if y >= 26:
+        return {"head": 1.0}
+    if y >= 24:
+        return interpolate([(26, "head"), (24, "chest")], y)
+    if y >= 20:
+        return {"chest": 1.0}
+    if y >= 18:
+        return interpolate([(20, "chest"), (18, "body")], y)
+    if y >= 13:
+        return {"body": 1.0}
+    return interpolate([(13, "body"), (12, "waist")], y)
 
 
 def weights_at(position, region):
     _, y, _ = position
     if region == "core":
-        result = interpolate(TORSO, y)
+        result = core_weights(y)
     elif region.endswith("Arm"):
         side = region[:-3]
-        limb = interpolate([(height, side + name) for height, name in ARM], y)
-        blend = min(1.0, max(0.0, (24 - y) / 2))
-        result = {name: value * blend for name, value in limb.items()}
-        result["chest"] = result.get("chest", 0) + 1 - blend
+        result = limb_weights(side, "Arm", y)
     elif region.endswith("Leg"):
         side = region[:-3]
-        limb = interpolate([(height, side + name) for height, name in LEG], y)
-        blend = min(1.0, max(0.0, (12 - y) / 2))
-        result = {name: value * blend for name, value in limb.items()}
-        result["waist"] = result.get("waist", 0) + 1 - blend
+        result = limb_weights(side, "Leg", y)
     else:
         raise AssertionError(region)
     result = {name: round(value, 6) for name, value in result.items()
@@ -109,25 +141,6 @@ def bone(name, origin, length, index):
         "color": index % 12, "vertex_weights": {},
         "allow_mirror_modeling": True,
     }
-
-
-def face_corners(x, y, z, direction):
-    if direction == "east":
-        return [(x+1,y,z), (x+1,y+1,z), (x+1,y+1,z+1), (x+1,y,z+1)]
-    if direction == "west":
-        return [(x,y,z), (x,y,z+1), (x,y+1,z+1), (x,y+1,z)]
-    if direction == "up":
-        return [(x,y+1,z), (x,y+1,z+1), (x+1,y+1,z+1), (x+1,y+1,z)]
-    if direction == "down":
-        return [(x,y,z), (x+1,y,z), (x+1,y,z+1), (x,y,z+1)]
-    if direction == "south":
-        return [(x,y,z+1), (x+1,y,z+1), (x+1,y+1,z+1), (x,y+1,z+1)]
-    return [(x,y,z), (x,y+1,z), (x+1,y+1,z), (x+1,y,z)]
-
-
-NEIGHBOR = {"east": (1,0,0), "west": (-1,0,0),
-            "up": (0,1,0), "down": (0,-1,0),
-            "south": (0,0,1), "north": (0,0,-1)}
 
 
 def uv_at(point, source, bounds, direction):
@@ -200,57 +213,83 @@ def volumes(source):
     return elements, shapes
 
 
-def make_base(shapes, label):
-    solids = {}
-    for name, (_, (x0,y0,z0,x1,y1,z1)) in shapes.items():
-        for x in range(x0,x1):
-            for y in range(y0,y1):
-                for z in range(z0,z1):
-                    key = (x,y,z)
-                    assert key not in solids, (key, name, solids.get(key))
-                    solids[key] = name
-    result = mesh(label + "_continuous_base")
+def banded_corners(bounds, direction, lower, upper):
+    x0, _, z0, x1, _, z1 = bounds
+    if direction == "west":
+        return [(x0,lower,z0),(x0,lower,z1),(x0,upper,z1),(x0,upper,z0)]
+    if direction == "east":
+        return [(x1,lower,z0),(x1,upper,z0),(x1,upper,z1),(x1,lower,z1)]
+    if direction == "north":
+        return [(x0,lower,z0),(x0,upper,z0),(x1,upper,z0),(x1,lower,z0)]
+    if direction == "south":
+        return [(x0,lower,z1),(x1,lower,z1),(x1,upper,z1),(x0,upper,z1)]
+    if direction == "down":
+        return [(x0,lower,z0),(x1,lower,z0),(x1,lower,z1),(x0,lower,z1)]
+    return [(x0,upper,z0),(x0,upper,z1),(x1,upper,z1),(x1,upper,z0)]
+
+
+def make_banded_box(name, source, bounds, bands, overlay=False):
+    """One continuous shell; only joint neighborhoods have narrow face bands."""
+    y0, y1 = bounds[1], bounds[4]
+    assert bands[0] == y0 and bands[-1] == y1
+    inflation = source.get("inflate", 0) if overlay else 0
+    label = name + ("_weighted_outer" if overlay else "_continuous_base")
+    result = mesh(label)
     builder = MeshBuilder(result)
-    for (x,y,z), name in solids.items():
-        source, bounds = shapes[name]
-        for direction, delta in NEIGHBOR.items():
-            neighbor = (x+delta[0], y+delta[1], z+delta[2])
-            if neighbor in solids:
-                continue
-            builder.quad(face_corners(x,y,z,direction), source,
-                         bounds, direction)
+    for direction in ("west", "east", "north", "south", "down", "up"):
+        spans = list(zip(bands, bands[1:])) if direction in (
+            "west", "east", "north", "south") else [(y0, y1)]
+        for lower, upper in spans:
+            corners = banded_corners(bounds, direction, lower, upper)
+            inflated = []
+            for px, py, pz in corners:
+                inflated.append((
+                    px-inflation if px==bounds[0] else px+inflation if px==bounds[3] else px,
+                    py-inflation if py==y0 else py+inflation if py==y1 else py,
+                    pz-inflation if pz==bounds[2] else pz+inflation if pz==bounds[5] else pz,
+                ))
+            ids = [builder.vertex(point) for point in inflated]
+            uv = {vid: uv_at(point, source, bounds, direction)
+                  for vid, point in zip(ids, corners)}
+            fid = "f" + str(len(result["faces"])).zfill(5)
+            result["faces"][fid] = {
+                "uv": uv, "vertices": ids, "texture": 0,
+            }
     return result
 
 
-def make_overlay(name, source):
-    bounds = [round(value) for value in source["from"] + source["to"]]
-    x0,y0,z0,x1,y1,z1 = bounds
-    inflation = source.get("inflate", 0)
-    result = mesh(name + "_weighted_outer")
+def make_core(shapes):
+    """Joined head and torso shell with broad shaft faces and an open neck seam."""
+    body_source, body_bounds = shapes["body"]
+    head_source, head_bounds = shapes["head"]
+    assert body_bounds == [-4,12,-2,4,24,2]
+    assert head_bounds == [-4,24,-4,4,32,4]
+    result = mesh("core_continuous_base")
     builder = MeshBuilder(result)
-    for x in range(x0,x1):
-        for y in range(y0,y1):
-            for z in range(z0,z1):
-                for direction, delta in NEIGHBOR.items():
-                    nx,ny,nz = x+delta[0],y+delta[1],z+delta[2]
-                    if x0<=nx<x1 and y0<=ny<y1 and z0<=nz<z1:
-                        continue
-                    corners = face_corners(x,y,z,direction)
-                    inflated = []
-                    for px,py,pz in corners:
-                        inflated.append((
-                            px-inflation if px==x0 else px+inflation if px==x1 else px,
-                            py-inflation if py==y0 else py+inflation if py==y1 else py,
-                            pz-inflation if pz==z0 else pz+inflation if pz==z1 else pz,
-                        ))
-                    # Texture coordinates use the uninflated source surface.
-                    ids = [builder.vertex(point) for point in inflated]
-                    uv = {vid: uv_at(point, source, bounds, direction)
-                          for vid, point in zip(ids, corners)}
-                    fid = "f" + str(len(result["faces"])).zfill(5)
-                    result["faces"][fid] = {
-                        "uv": uv, "vertices": ids, "texture": 0,
-                    }
+
+    def add(source, uv_bounds, patch_bounds, direction, lower, upper):
+        builder.quad(banded_corners(patch_bounds, direction, lower, upper),
+                     source, uv_bounds, direction)
+
+    for lower, upper in zip(BODY_BANDS, BODY_BANDS[1:]):
+        for direction in ("west", "east", "north", "south"):
+            add(body_source, body_bounds, body_bounds, direction, lower, upper)
+    add(body_source, body_bounds, body_bounds, "down", 12, 24)
+
+    # The head overhangs the torso front and back. Its lower two strips form
+    # the visible underside; the torso top is internal and therefore omitted.
+    for lower, upper in zip(HEAD_BANDS, HEAD_BANDS[1:]):
+        for direction in ("north", "south"):
+            add(head_source, head_bounds, head_bounds, direction, lower, upper)
+        for z0, z1 in ((-4,-2),(-2,2),(2,4)):
+            patch = [-4,24,z0,4,32,z1]
+            for direction in ("west", "east"):
+                add(head_source, head_bounds, patch, direction, lower, upper)
+    for z0, z1 in ((-4,-2),(-2,2),(2,4)):
+        patch = [-4,24,z0,4,32,z1]
+        add(head_source, head_bounds, patch, "up", 24, 32)
+        if z0 != -2:
+            add(head_source, head_bounds, patch, "down", 24, 32)
     return result
 
 
@@ -260,12 +299,21 @@ def build(source):
     originals, shapes = volumes(source)
     # Keep each limb independent at the shoulders and crotch. Within a limb,
     # the surface stays one continuous weighted mesh across elbow or knee.
-    meshes = [make_base({name: shapes[name] for name in ("head", "body")},
-                        "core")]
+    meshes = [make_core(shapes)]
     for name in ("rightArm", "leftArm", "rightLeg", "leftLeg"):
-        meshes.append(make_base({name: shapes[name]}, name))
+        limb_source, bounds = shapes[name]
+        bands = ARM_BANDS if name.endswith("Arm") else LEG_BANDS
+        meshes.append(make_banded_box(name, limb_source, bounds, bands))
     for name in ("head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"):
-        meshes.append(make_overlay(name, originals[name + "_outer"]))
+        outer_source = originals[name + "_outer"]
+        bounds = [round(value) for value in outer_source["from"] + outer_source["to"]]
+        if name == "rightLeg":
+            bounds[0], bounds[3] = 0, 4
+        elif name == "leftLeg":
+            bounds[0], bounds[3] = -4, 0
+        bands = (HEAD_BANDS if name == "head" else BODY_BANDS if name == "body"
+                 else ARM_BANDS if name.endswith("Arm") else LEG_BANDS)
+        meshes.append(make_banded_box(name, outer_source, bounds, bands, overlay=True))
 
     armature = {
         "isOpen": True, "uuid": uid("armature"), "type": "armature",
@@ -352,7 +400,7 @@ def validate(project):
             assert len(face["vertices"])==4
             assert all(key in item["vertices"] for key in face["vertices"])
             assert set(face["vertices"])==set(face["uv"])
-            if item["name"].endswith("_continuous_base"):
+            if item["name"].endswith(("_continuous_base", "_weighted_outer")):
                 corners = face["vertices"]
                 for a, b in zip(corners, corners[1:] + corners[:1]):
                     edges[tuple(sorted((a, b)))] += 1
@@ -360,6 +408,12 @@ def validate(project):
         if edges:
             assert all(count == 2 for count in edges.values()), item["name"]
             assert len({find(key) for key in parents}) == 1, item["name"]
+        region = item["name"].split("_")[0]
+        if region.endswith(("Arm", "Leg")):
+            bands = ARM_BANDS if region.endswith("Arm") else LEG_BANDS
+            for point in item["vertices"].values():
+                assert min(abs(point[1] - level) for level in bands) <= 0.25, (
+                    item["name"], point)
         for vid in item["vertices"]:
             key = item["uuid"][:6] + ":" + vid
             total = sum(b.get("vertex_weights",{}).get(key,0)
