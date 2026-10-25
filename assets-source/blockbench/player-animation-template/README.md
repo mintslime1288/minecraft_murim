@@ -1,5 +1,16 @@
 # 플레이어 Blockbench 애니메이션 템플릿
 
+## 좌우 체중 이동 v5 (2026-10-25)
+
+`player_current_weighted_walk_lateral_sway.bbmodel`은 공개 중립 스킨
+편집본이다. 현재 스킨 로컬본은 상위 작업 폴더의
+`플레이어_Blockbench_수정용/현재_플레이어_걷기_좌우체중이동_v5.bbmodel`이다.
+Blockbench 애니메이션 탭에서 `걷기_좌우체중이동_1.2초`를 고른다.
+오른발 지지 중에는 X 양수, 왼발 지지 중에는 X 음수로 등허리와 골반을
+작게 옮겨 좌우 움직임을 보이게 했다. 이전 v4와 무릎·접지·스킨·메시를
+보존했다. 수치, 확인 범위와 다음 수정용 통합 프롬프트는
+`LATERAL_WALK_V5.md`에 있다. 게임 런타임에는 적용하지 않았다.
+
 ## 사용자 저장 자세·접지·역동감 v4 (2026-10-25)
 
 `player_current_weighted_walk_contact_dynamic.bbmodel`은 공개 중립 스킨
