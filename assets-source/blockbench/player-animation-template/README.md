@@ -1,5 +1,16 @@
 # 플레이어 Blockbench 애니메이션 템플릿
 
+## 어깨 끝점 교차 v7 (2026-10-25)
+
+`player_current_weighted_walk_crossed_shoulders.bbmodel`은 공개 중립 스킨,
+상위 작업 폴더의 `플레이어_Blockbench_수정용/현재_플레이어_걷기_어깨끝점교차_v7.bbmodel`은
+현재 스킨 편집본이다. Blockbench 애니메이션 탭에서
+`걷기_어깨끝점교차_1.2초`를 재생한다. 몸통 중심에 붙은 어깨 연결 관절을
+걸음에 맞춰 교대로 움직여, 위에서 보면 좌우 어깨 바깥 끝이 앞뒤를
+바꾼다. 팔 자체의 회전과 몸통의 위치 키는 v4 그대로다. 아래 v5는
+몸통 이동, v6은 팔 자체 회전으로 잘못 해석한 이전 시안이다.
+`CROSSED_SHOULDERS_V7.md`에 시점과 조절 방법을 기록했다.
+
 ## 팔 좌우 흔들기 v6 (2026-10-25)
 
 `player_current_weighted_walk_side_arms.bbmodel`은 공개 중립 스킨 편집본,
