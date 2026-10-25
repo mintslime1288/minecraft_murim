@@ -1,5 +1,17 @@
 # 플레이어 Blockbench 애니메이션 템플릿
 
+## 걷기 다듬기 v2 (2026-10-25)
+
+새 공개 편집본은 `player_current_weighted_walk_refined.bbmodel`, 현재 스킨의
+로컬 편집본은 상위 작업 폴더의
+`플레이어_Blockbench_수정용/현재_플레이어_걷기_다듬기_v2.bbmodel`이다.
+Blockbench에서 `걷기_접지회수_다듬기_1.2초` 클립을 연다. 접지 0.7초와
+회수 0.5초를 구분하고 팔·다리 회전을 소폭 줄인 1.2초 제자리 반복이다.
+숫자와 미확인 시각 항목, 다음 수정용 통합 프롬프트는
+`WALK_REFINEMENT_V2.md`에 적었다. `refine_weighted_walk.py`는 v1을
+읽어 별도 파일로 만들며 이전 모션과 현재 스킨 원본을 덮어쓰지 않는다.
+사용자 요청에 따라 화면 조작과 인게임 적용은 하지 않았다.
+
 ## 걷기 클립 초안 (2026-10-25)
 
 `player_current_weighted_walk_editable.bbmodel`은 공개용 중립 스킨 모델에
