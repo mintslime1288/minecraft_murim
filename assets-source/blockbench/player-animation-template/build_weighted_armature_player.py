@@ -33,16 +33,22 @@ BONE_SPEC = [
 for side, sign in (("right", 1), ("left", -1)):
     x = sign * 6
     BONE_SPEC.extend([
-        (side + "Arm", "chest", (sign * 5, 22, 0), 3),
+        (side + "ShoulderBridge", "chest", (0, 22, 0), 5),
+        (side + "Arm", side + "ShoulderBridge", (sign * 5, 22, 0), 3),
         (side + "UpperArm", side + "Arm", (x, 20, 0), 2),
-        (side + "Elbow", side + "UpperArm", (x, 18, 0), 2),
-        (side + "Forearm", side + "Elbow", (x, 16, 0), 3),
+        (side + "ElbowIn", side + "UpperArm", (x, 18.5, 0), 0.5),
+        (side + "Elbow", side + "ElbowIn", (x, 18, 0), 0.5),
+        (side + "ElbowOut", side + "Elbow", (x, 17.5, 0), 1.5),
+        (side + "Forearm", side + "ElbowOut", (x, 16, 0), 3),
         (side + "Wrist", side + "Forearm", (x, 13, 0), 1),
         (side + "Hand", side + "Wrist", (x, 12, 0), 1),
-        (side + "Leg", "waist", (sign * 2, 12, 0), 2),
+        (side + "HipBridge", "waist", (0, 12, 0), 2),
+        (side + "Leg", side + "HipBridge", (sign * 2, 12, 0), 3),
         (side + "Thigh", side + "Leg", (sign * 2, 9, 0), 3),
-        (side + "Knee", side + "Thigh", (sign * 2, 6, 0), 2),
-        (side + "Shin", side + "Knee", (sign * 2, 4, 0), 2),
+        (side + "KneeIn", side + "Thigh", (sign * 2, 6.5, 0), 0.5),
+        (side + "Knee", side + "KneeIn", (sign * 2, 6, 0), 0.5),
+        (side + "KneeOut", side + "Knee", (sign * 2, 5.5, 0), 1.5),
+        (side + "Shin", side + "KneeOut", (sign * 2, 4, 0), 2),
         (side + "Ankle", side + "Shin", (sign * 2, 2, 0), 2),
         (side + "Foot", side + "Ankle", (sign * 2, 0, 0), 2),
     ])
@@ -64,8 +70,8 @@ def interpolate(points, y):
 
 BODY_BANDS = (12, 13, 18, 19, 20, 24)
 HEAD_BANDS = (24, 25, 26, 32)
-ARM_BANDS = (12, 13, 17, 18, 19, 23, 24)
-LEG_BANDS = (0, 1, 2, 5, 6, 7, 11, 12)
+ARM_BANDS = (12, 13, 17, 17.5, 18, 18.5, 19, 23, 24)
+LEG_BANDS = (0, 1, 2, 5, 5.5, 6, 6.5, 7, 11, 12)
 
 
 def limb_weights(side, kind, y):
@@ -75,8 +81,17 @@ def limb_weights(side, kind, y):
             return interpolate([(24, "chest"), (23, side + "UpperArm")], y)
         if y >= 19:
             return {side + "UpperArm": 1.0}
-        if y >= 17:
+        if y >= 18.5:
             return interpolate([(19, side + "UpperArm"),
+                                (18.5, side + "ElbowIn")], y)
+        if y >= 18:
+            return interpolate([(18.5, side + "ElbowIn"),
+                                (18, side + "Elbow")], y)
+        if y >= 17.5:
+            return interpolate([(18, side + "Elbow"),
+                                (17.5, side + "ElbowOut")], y)
+        if y >= 17:
+            return interpolate([(17.5, side + "ElbowOut"),
                                 (17, side + "Forearm")], y)
         if y >= 13:
             return {side + "Forearm": 1.0}
@@ -86,8 +101,17 @@ def limb_weights(side, kind, y):
         return interpolate([(12, "waist"), (11, side + "Thigh")], y)
     if y >= 7:
         return {side + "Thigh": 1.0}
-    if y >= 5:
+    if y >= 6.5:
         return interpolate([(7, side + "Thigh"),
+                            (6.5, side + "KneeIn")], y)
+    if y >= 6:
+        return interpolate([(6.5, side + "KneeIn"),
+                            (6, side + "Knee")], y)
+    if y >= 5.5:
+        return interpolate([(6, side + "Knee"),
+                            (5.5, side + "KneeOut")], y)
+    if y >= 5:
+        return interpolate([(5.5, side + "KneeOut"),
                             (5, side + "Shin")], y)
     if y >= 2:
         return {side + "Shin": 1.0}
@@ -131,13 +155,15 @@ def weights_at(position, region):
     return result
 
 
-def bone(name, origin, length, index):
+def bone(name, origin, length, index, connected):
     return {
         "isOpen": False, "uuid": uid("bone/" + name),
         "type": "armature_bone", "name": name, "children": [],
         "export": True, "locked": False, "scope": 0,
         "origin": list(origin), "rotation": [0, 0, 0],
-        "length": length, "width": 1.25, "connected": False,
+        "length": length,
+        "width": 0.8 if name.endswith(("In", "Out", "Bridge")) else 1.25,
+        "connected": connected,
         "color": index % 12, "vertex_weights": {},
         "allow_mirror_modeling": True,
     }
@@ -327,7 +353,11 @@ def build(source):
     for index, (name, parent, origin, length) in enumerate(BONE_SPEC):
         parent_origin = world_origins[parent] if parent else (0, 0, 0)
         local_origin = tuple(a - b for a, b in zip(origin, parent_origin))
-        bones[name] = bone(name, local_origin, length, index)
+        # Blockbench draws a connected parent's shaft toward its child pivot.
+        # Shoulder and hip bridges start inside the torso; their child bones
+        # carry the visible links to the shoulder and leg roots.
+        connected = parent is not None and not name.endswith("Bridge")
+        bones[name] = bone(name, local_origin, length, index, connected)
     hierarchy = {name: [] for name in bones}
     for name, parent, _, _ in BONE_SPEC:
         if parent:
@@ -376,6 +406,12 @@ def validate(project):
         resolved = tuple(a + b for a, b in
                          zip(bones[name]["origin"], parent_origin))
         assert resolved == expected, (name, resolved, expected)
+        assert bones[name]["connected"] == (parent is not None and
+                                            not name.endswith("Bridge")), name
+    for side in ("right", "left"):
+        for joint in ("ElbowIn", "Elbow", "ElbowOut",
+                      "KneeIn", "Knee", "KneeOut"):
+            assert bones[side + joint]["vertex_weights"], side + joint
     used = []
     def walk(entries):
         for entry in entries:
@@ -416,6 +452,12 @@ def validate(project):
                     item["name"], point)
         for vid in item["vertices"]:
             key = item["uuid"][:6] + ":" + vid
+            if region.endswith(("Arm", "Leg")):
+                side = region[:5] if region.startswith("right") else "left"
+                influences = {name for name, entry in bones.items()
+                              if entry["vertex_weights"].get(key, 0) > 0}
+                assert all(name.startswith(side) or name in ("chest", "waist")
+                           for name in influences), (item["name"], vid, influences)
             total = sum(b.get("vertex_weights",{}).get(key,0)
                         for b in elements if b["type"]=="armature_bone")
             assert math.isclose(total, 1, abs_tol=0.00001), (item["name"],vid,total)
