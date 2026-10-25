@@ -24,8 +24,9 @@ def uid(label):
 
 BONE_SPEC = [
     ("root", None, (0, 0, 0), 12),
-    ("waist", "root", (0, 12, 0), 4),
-    ("body", "waist", (0, 16, 0), 4),
+    ("waist", "root", (0, 12, 0), 2),
+    ("lowerBack", "waist", (0, 14, 0), 2),
+    ("body", "lowerBack", (0, 16, 0), 4),
     ("chest", "body", (0, 20, 0), 4),
     ("neck", "chest", (0, 24, 0), 2),
     ("head", "neck", (0, 26, 0), 6),
@@ -68,7 +69,7 @@ def interpolate(points, y):
     raise AssertionError(y)
 
 
-BODY_BANDS = (12, 13, 18, 19, 20, 24)
+BODY_BANDS = (12, 13, 13.5, 14, 14.5, 15, 18, 19, 20, 24)
 HEAD_BANDS = (24, 25, 26, 32)
 ARM_BANDS = (12, 13, 17, 17.5, 18, 18.5, 19, 23, 24)
 LEG_BANDS = (0, 1, 2, 5, 5.5, 6, 6.5, 7, 11, 12)
@@ -78,7 +79,7 @@ def limb_weights(side, kind, y):
     """Rigid shaft surfaces, with a two-pixel skin transition at each joint."""
     if kind == "Arm":
         if y >= 23:
-            return interpolate([(24, "chest"), (23, side + "UpperArm")], y)
+            return {side + "UpperArm": 1.0}
         if y >= 19:
             return {side + "UpperArm": 1.0}
         if y >= 18.5:
@@ -127,9 +128,13 @@ def core_weights(y):
         return {"chest": 1.0}
     if y >= 18:
         return interpolate([(20, "chest"), (18, "body")], y)
-    if y >= 13:
+    if y >= 15:
         return {"body": 1.0}
-    return interpolate([(13, "body"), (12, "waist")], y)
+    if y >= 14:
+        return interpolate([(15, "body"), (14, "lowerBack")], y)
+    if y >= 13:
+        return interpolate([(14, "lowerBack"), (13, "waist")], y)
+    return {"waist": 1.0}
 
 
 def weights_at(position, region):
@@ -339,7 +344,12 @@ def build(source):
             bounds[0], bounds[3] = -4, 0
         bands = (HEAD_BANDS if name == "head" else BODY_BANDS if name == "body"
                  else ARM_BANDS if name.endswith("Arm") else LEG_BANDS)
-        meshes.append(make_banded_box(name, outer_source, bounds, bands, overlay=True))
+        if name == "head":
+            # A second head shell looks like another solid block during posing.
+            # The previous editable versions retain that optional skin layer.
+            continue
+        meshes.append(make_banded_box(name, outer_source, bounds, bands,
+                                      overlay=True))
 
     armature = {
         "isOpen": True, "uuid": uid("armature"), "type": "armature",
@@ -400,6 +410,9 @@ def validate(project):
     assert len(ids)==len(set(ids))
     bones = {entry["name"]: entry for entry in elements
              if entry["type"] == "armature_bone"}
+    assert "lowerBack" in bones
+    assert bones["lowerBack"]["vertex_weights"], "unweighted lower back joint"
+    assert not any(entry["name"] == "head_weighted_outer" for entry in elements)
     world_origins = {name: origin for name, _, origin, _ in BONE_SPEC}
     for name, parent, expected, _ in BONE_SPEC:
         parent_origin = world_origins[parent] if parent else (0, 0, 0)
@@ -452,6 +465,11 @@ def validate(project):
                     item["name"], point)
         for vid in item["vertices"]:
             key = item["uuid"][:6] + ":" + vid
+            if region.endswith("Arm") and item["vertices"][vid][1] >= 23:
+                side = "right" if region.startswith("right") else "left"
+                assert bones[side + "UpperArm"]["vertex_weights"].get(key) == 1, (
+                    item["name"], vid, "top of shoulder must follow arm")
+                assert key not in bones["chest"]["vertex_weights"]
             if region.endswith(("Arm", "Leg")):
                 side = region[:5] if region.startswith("right") else "left"
                 influences = {name for name, entry in bones.items()
