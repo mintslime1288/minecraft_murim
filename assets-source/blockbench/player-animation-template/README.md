@@ -1,5 +1,17 @@
 # 플레이어 Blockbench 애니메이션 템플릿
 
+## 사용자 무릎 자세 연결 v3 (2026-10-25)
+
+사용자가 0초에서 직접 만든 `rightKnee` −23.5°와 `leftKnee` −17.632°를
+보존하고, 양쪽 무릎의 남은 걷기 프레임을 이어 만든 편집본은
+`player_current_weighted_walk_user_knees.bbmodel`이다. 현재 스킨 로컬본은
+상위 작업 폴더의
+`플레이어_Blockbench_수정용/현재_플레이어_걷기_사용자무릎반영_v3.bbmodel`이다.
+Blockbench에서 `걷기_사용자무릎자세_연결_1.2초` 클립을 고른다.
+사용자 미저장 자세는 로컬 별도 파일에 먼저 저장해 보존했다.
+`USER_KNEE_WALK_V3.md`에 키프레임 표, 검증 범위와 다음 수정용
+통합 프롬프트가 있다. 기존 v2, 다른 모션 및 게임 런타임은 변경하지 않았다.
+
 ## 걷기 다듬기 v2 (2026-10-25)
 
 새 공개 편집본은 `player_current_weighted_walk_refined.bbmodel`, 현재 스킨의
