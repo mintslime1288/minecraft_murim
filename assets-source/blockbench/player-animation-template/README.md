@@ -1,5 +1,15 @@
 # 플레이어 Blockbench 애니메이션 템플릿
 
+## 팔 좌우 흔들기 v6 (2026-10-25)
+
+`player_current_weighted_walk_side_arms.bbmodel`은 공개 중립 스킨 편집본,
+상위 작업 폴더의 `플레이어_Blockbench_수정용/현재_플레이어_걷기_팔좌우흔들기_v6.bbmodel`은
+현재 스킨 편집본이다. Blockbench 애니메이션 탭에서
+`걷기_팔좌우흔들기_1.2초`를 재생한다. 양팔의 좌우 방향 회전만
+추가했으며 골반·몸통의 좌우 위치는 움직이지 않는다. 아래 v5는
+사용자의 뜻을 몸통 좌우 이동으로 잘못 해석한 이전 시안이다.
+`SIDE_ARM_WALK_V6.md`에 검사 결과와 조절 방법을 기록했다.
+
 ## 좌우 체중 이동 v5 (2026-10-25)
 
 `player_current_weighted_walk_lateral_sway.bbmodel`은 공개 중립 스킨
